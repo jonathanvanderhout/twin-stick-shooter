@@ -10,13 +10,15 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: #000;
+      /* background: #000; */
+      background: #041E42;
+
       font-family: 'Arial', sans-serif;
     }
 
     canvas {
       display: block;
-      background: #041E42;
+      /* background: #041E42; */
       background-attachment: fixed;
     }
 
@@ -107,7 +109,7 @@
     import { startBubbleExplosion, updateBubbleExplosions } from "./bubbles.js";
     import { spawnEnemy, updateEnemies, spawnSquid, updateSquids, spawnTriangleEnemy, updateTriangleEnemies } from "./enemies.js";
     import { startDamageExplosion, updateDamageExplosions } from './damageEffect.js';
-    import {renderScene} from "./renderScene.js"
+    import { renderScene } from "./renderScene.js"
 
     // Import Rapier2D (compat version) from Skypack.
     const shotSound = new Audio("shot.wav"); // Ensure this file exists
@@ -541,25 +543,25 @@
       }
 
       renderScene({
-  ctx,
-  canvas,
-  worldWidth,
-  worldHeight,
-  walls,
-  playerBody,
-  isDashing,
-  playerRadius,
-  enemies,
-  enemyRadius,
-  squids,
-  triangleEnemies,
-  bullets,
-  bulletRadius,
-  getCameraScale,
-  getCameraOrigin,
-  updateBubbleExplosions,
-  updateDamageExplosions
-});
+        ctx,
+        canvas,
+        worldWidth,
+        worldHeight,
+        walls,
+        playerBody,
+        isDashing,
+        playerRadius,
+        enemies,
+        enemyRadius,
+        squids,
+        triangleEnemies,
+        bullets,
+        bulletRadius,
+        getCameraScale,
+        getCameraOrigin,
+        updateBubbleExplosions,
+        updateDamageExplosions
+      });
 
 
 

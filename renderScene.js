@@ -212,15 +212,55 @@ export function renderScene({
         ctx.save();
         ctx.translate(pos.x, pos.y);
         ctx.rotate(angle);
-        ctx.fillStyle = "#8A2BE2";
+        
+        // Main body - keep as a circle for symmetry
+        ctx.fillStyle = "#8A2BE2"; // Purple body
         ctx.beginPath();
         ctx.arc(0, 0, enemyRadius, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Tentacles - arranged symmetrically around the body
+        const tentacleCount = 8; // Even number for symmetry
+        const tentacleLength = enemyRadius * 0.6;
+        const tentacleWidth = enemyRadius * 0.25;
+        
+        for (let i = 0; i < tentacleCount; i++) {
+            const tentacleAngle = (i * Math.PI * 2 / tentacleCount);
+            const startX = Math.cos(tentacleAngle) * enemyRadius;
+            const startY = Math.sin(tentacleAngle) * enemyRadius;
+            const endX = Math.cos(tentacleAngle) * (enemyRadius + tentacleLength);
+            const endY = Math.sin(tentacleAngle) * (enemyRadius + tentacleLength);
+            
+            // Draw straight geometric tentacles
+            ctx.fillStyle = "#7B24C4"; // Slightly darker purple
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.lineWidth = tentacleWidth;
+            ctx.lineCap = "round";
+            ctx.stroke();
+        }
+        
+        // Eye - pointing in direction of movement (forward direction is at angle 0)
         ctx.fillStyle = "#FFFFFF";
         ctx.beginPath();
-        const dotX = enemyRadius * 0.7;
-        ctx.arc(dotX, 0, 3, 0, Math.PI * 2);
+        const eyeDistance = enemyRadius * 0.5; // Position eye halfway to edge
+        ctx.arc(eyeDistance, 0, enemyRadius * 0.3, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Pupil
+        ctx.fillStyle = "#000000";
+        ctx.beginPath();
+        ctx.arc(eyeDistance, 0, enemyRadius * 0.15, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Optional: add a ring around the body for more definition
+        ctx.strokeStyle = "#6A1B9A";
+        ctx.lineWidth = enemyRadius * 0.1;
+        ctx.beginPath();
+        ctx.arc(0, 0, enemyRadius * 0.95, 0, Math.PI * 2);
+        ctx.stroke();
+        
         ctx.restore();
     });
 
@@ -231,19 +271,30 @@ export function renderScene({
         ctx.save();
         ctx.translate(pos.x, pos.y);
         ctx.rotate(angle);
+        
+        // Define torpedo dimensions based on enemyRadius.
+        const torpedoLength = enemyRadius * 2;   // Total length of the torpedo.
+        const torpedoWidth = enemyRadius * 0.7;    // Half-width for the curves.
+        
         ctx.beginPath();
-        const size = enemyRadius;
-        ctx.moveTo(size, 0);
-        ctx.lineTo(-size, -size * 0.7);
-        ctx.lineTo(-size, size * 0.7);
+        // Start at the nose (front) of the torpedo.
+        ctx.moveTo(torpedoLength, 0);
+        // Draw a smooth top curve from the nose to the tail.
+        ctx.quadraticCurveTo(torpedoLength * 0.5, -torpedoWidth, -torpedoLength * 0.5, -torpedoWidth);
+        // Draw the straight tail section.
+        ctx.lineTo(-torpedoLength * 0.5, torpedoWidth);
+        // Draw a smooth bottom curve back to the nose.
+        ctx.quadraticCurveTo(torpedoLength * 0.5, torpedoWidth, torpedoLength, 0);
         ctx.closePath();
+        
         ctx.fillStyle = "black";
         ctx.fill();
         ctx.strokeStyle = "red";
         ctx.lineWidth = 2 / scale;
         ctx.stroke();
         ctx.restore();
-    });
+      });
+      
 
     // --- Draw Bullets ---
     ctx.fillStyle = "#5CDBFF";
@@ -273,3 +324,5 @@ export function renderScene({
     // Reset transform for HUD.
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
+
+
