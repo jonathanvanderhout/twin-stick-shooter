@@ -136,3 +136,62 @@ export function updateSquids(squids, playerBody, currentTime, dt) {
     }
   });
 }
+
+/**
+ * Spawns a triangle enemy at a random location away from the player.
+ * This enemy is triangular shaped, moves toward the player with its point forward,
+ * and is slightly faster than the player.
+ * @param {Object} params
+ * @param {RAPIER.World} params.physicsWorld
+ * @param {RAPIER.RigidBody} params.playerBody
+ * @param {number} params.worldWidth
+ * @param {number} params.worldHeight
+ * @param {number} params.enemyRadius - Used as the triangle size.
+ * @param {Array} params.triangleEnemies
+ */
+export function spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies }) {
+  let x, y;
+  const playerPos = playerBody.translation();
+  do {
+    x = Math.random() * (worldWidth - 100) + 50;
+    y = Math.random() * (worldHeight - 100) + 50;
+  } while (Math.hypot(x - playerPos.x, y - playerPos.y) < 500);
+
+  const bodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y);
+  const triBody = physicsWorld.createRigidBody(bodyDesc);
+  const colliderDesc = RAPIER.ColliderDesc.ball(enemyRadius);
+  physicsWorld.createCollider(colliderDesc, triBody);
+
+  // Set initial velocity: move toward the player.
+  const pos = triBody.translation();
+  const playerPos2 = playerBody.translation();
+  const dx = playerPos2.x - pos.x;
+  const dy = playerPos2.y - pos.y;
+  const angle = Math.atan2(dy, dx);
+  const speed = 450; // Slightly faster than the player's speed
+  triBody.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+  // Set rotation to face the movement direction.
+  triBody.setRotation(angle, true);
+
+  triangleEnemies.push(triBody);
+}
+
+/**
+ * Updates triangle enemy movement so that each enemy continuously
+ * moves toward the player ship with its tip forward.
+ * @param {Array} triangleEnemies
+ * @param {RAPIER.RigidBody} playerBody
+ * @param {number} dt - Delta time in seconds.
+ */
+export function updateTriangleEnemies(triangleEnemies, playerBody, dt) {
+  const speed = 405; // Slightly faster than player
+  triangleEnemies.forEach(tri => {
+    const pos = tri.translation();
+    const playerPos = playerBody.translation();
+    const dx = playerPos.x - pos.x;
+    const dy = playerPos.y - pos.y;
+    const angle = Math.atan2(dy, dx);
+    tri.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+    tri.setRotation(angle, true);
+  });
+}

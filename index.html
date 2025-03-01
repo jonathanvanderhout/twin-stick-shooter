@@ -54,9 +54,10 @@
   <div id="healthDiv">Health: 100%</div>
   <canvas id="gameCanvas"></canvas>
   <script type="module">
-    // Import explosion effects and enemy/squid functions.
+    // Import explosion effects and enemy/squid/triangle functions.
     import { startBubbleExplosion, updateBubbleExplosions } from "./bubbles.js";
-    import { spawnEnemy, updateEnemies, spawnSquid, updateSquids } from "./enemies.js";
+    import { spawnEnemy, updateEnemies, spawnSquid, updateSquids, spawnTriangleEnemy, updateTriangleEnemies } from "./enemies.js";
+    import { startDamageExplosion, updateDamageExplosions } from './damageEffect.js';
 
     // Import Rapier2D (compat version) from Skypack.
     const shotSound = new Audio("shot.wav"); // Ensure this file exists
@@ -116,9 +117,10 @@
     const gravity = { x: 0, y: 0 };
     const physicsWorld = new RAPIER.World(gravity);
 
-    // Arrays for enemies, squids, and bullets.
+    // Arrays for enemies, squids, triangle enemies, and bullets.
     const enemies = [];
     const squids = [];
+    const triangleEnemies = [];
     const bullets = [];
 
     // --- Create Walls ---
@@ -150,8 +152,13 @@
     }
 
     // --- Spawn Squid Enemies ---
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+    }
+
+    // --- Spawn Triangle Enemies ---
+    for (let i = 0; i < 0; i++) {
+      spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
     }
 
     // --- Input Handling ---
@@ -225,13 +232,13 @@
 
     // --- Revised Movement Logic for the Player ---
     const movementLerp = 0.2;
-    let isDashing = false
+    let isDashing = false;
     function updatePlayerMovement(dt) {
       if (dashTriggered) {
         isDashing = true; // Start dash
         setTimeout(() => {
           isDashing = false; // End dash after a short duration
-        }, 1000); // Dash lasts 300ms
+        }, 1000);
         const playerPos = playerBody.translation();
         const scale = getCameraScale();
         const origin = getCameraOrigin(playerPos, scale);
@@ -283,6 +290,7 @@
 
       updateEnemies(enemies);
       updateSquids(squids, playerBody, currentTime, dt);
+      updateTriangleEnemies(triangleEnemies, playerBody, dt);
 
       // --- Update Bullets ---
       for (let i = bullets.length - 1; i >= 0; i--) {
@@ -338,6 +346,25 @@
         }
       }
 
+      // --- Check for Bullet–Triangle Enemy Collisions ---
+      for (let i = triangleEnemies.length - 1; i >= 0; i--) {
+        const tri = triangleEnemies[i];
+        const triPos = tri.translation();
+        for (let j = bullets.length - 1; j >= 0; j--) {
+          const bullet = bullets[j];
+          const bPos = bullet.body.translation();
+          if (Math.hypot(bPos.x - triPos.x, bPos.y - triPos.y) < bulletRadius + enemyRadius) {
+            startBubbleExplosion(triPos.x, triPos.y);
+            physicsWorld.removeRigidBody(tri);
+            triangleEnemies.splice(i, 1);
+            physicsWorld.removeRigidBody(bullet.body);
+            bullets.splice(j, 1);
+            spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+            break;
+          }
+        }
+      }
+
       // --- Check for Enemy–Player Collisions ---
       for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
@@ -347,6 +374,7 @@
           // player can hit enemies when dashing. 
           if (!isDashing) {
             playerHealth -= 10;
+            startDamageExplosion(playerPos.x, playerPos.y);
           }
           physicsWorld.removeRigidBody(enemy);
           enemies.splice(i, 1);
@@ -367,10 +395,32 @@
           startBubbleExplosion(sPos.x, sPos.y);
           if (!isDashing) {
             playerHealth -= 10;
+            startDamageExplosion(playerPos.x, playerPos.y);
           }
           physicsWorld.removeRigidBody(squid);
           squids.splice(i, 1);
           spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+          if (playerHealth <= 0) {
+            alert("Your submarine has been destroyed!");
+            window.location.reload();
+            return;
+          }
+        }
+      }
+
+      // --- Check for Triangle Enemy–Player Collisions ---
+      for (let i = triangleEnemies.length - 1; i >= 0; i--) {
+        const tri = triangleEnemies[i];
+        const triPos = tri.translation();
+        if (Math.hypot(playerPos.x - triPos.x, playerPos.y - triPos.y) < playerRadius + enemyRadius) {
+          startBubbleExplosion(triPos.x, triPos.y);
+          if (!isDashing) {
+            playerHealth -= 10;
+            startDamageExplosion(playerPos.x, playerPos.y);
+          }
+          physicsWorld.removeRigidBody(tri);
+          triangleEnemies.splice(i, 1);
+          spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
           if (playerHealth <= 0) {
             alert("Your submarine has been destroyed!");
             window.location.reload();
@@ -502,8 +552,6 @@
         ctx.fill();
         ctx.restore();
       }
-
-
       drawPlayer();
 
       // --- Draw Regular Enemies ---
@@ -595,6 +643,28 @@
         ctx.restore();
       });
 
+      // --- Draw Triangle Enemies ---
+      triangleEnemies.forEach(tri => {
+        const pos = tri.translation();
+        const angle = tri.rotation();
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        // Draw a triangle with its tip at the right.
+        const size = enemyRadius; // triangle size
+        ctx.moveTo(size, 0);
+        ctx.lineTo(-size, -size * 0.7);
+        ctx.lineTo(-size, size * 0.7);
+        ctx.closePath();
+        ctx.fillStyle = "black";
+        ctx.fill();
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2 / scale;
+        ctx.stroke();
+        ctx.restore();
+      });
+
       // --- Draw Bullets ---
       ctx.fillStyle = "#5CDBFF";
       bullets.forEach(bullet => {
@@ -618,6 +688,8 @@
 
       // Draw explosion effects.
       updateBubbleExplosions(ctx, scale, getCameraOrigin(playerPos, scale));
+      updateDamageExplosions(ctx, scale, getCameraOrigin(playerPos, scale));
+
 
       // Reset transform for HUD.
       ctx.setTransform(1, 0, 0, 1, 0, 0);
