@@ -210,17 +210,47 @@
     physicsWorld.createCollider(playerColliderDesc, playerBody);
 
     // Enemy spawn loop.
-    let spawnCounter = 0;
-    setInterval(() => {
-      if (gameStarted && !document.hidden) {
-        spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
-        spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
-        if (spawnCounter > 4) {
-          spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+  // Import the gamePlan configuration.
+import gamePlan from "./waves/gamePlan.js";
+
+// Track which waves have already been triggered.
+const triggeredWaves = new Set();
+
+// Assume gameStartTime is set when the game starts.
+let gameStartTime = performance.now();
+
+// Update the spawn logic every second.
+const waveSpawner = setInterval(() => {
+  if (gameStarted && !document.hidden) {
+    // Calculate elapsed seconds since game start.
+    const elapsedSeconds = Math.floor((performance.now() - gameStartTime) / 1000);
+
+    // Check if a wave is defined for the current elapsed seconds.
+    // (Make sure the wave is only triggered once.)
+    if (gamePlan.hasOwnProperty(elapsedSeconds.toString()) && !triggeredWaves.has(elapsedSeconds)) {
+      triggeredWaves.add(elapsedSeconds);
+      const wave = gamePlan[elapsedSeconds.toString()];
+      
+      // For each enemy group in this wave...
+      wave.enemies.forEach(group => {
+        // Spawn each enemy with the specified delay between spawns.
+        for (let i = 0; i < group.count; i++) {
+          setTimeout(() => {
+            // For now, placement is just a placeholder.
+            // You can use group.placement to modify the spawn position.
+            if (group.type === "normal") {
+              spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+            } else if (group.type === "squid") {
+              spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+            } else if (group.type === "triangle") {
+              spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+            }
+          }, group.delay * i); // delay between each spawn in the group.
         }
-        spawnCounter += 1;
-      }
-    }, 1000);
+      });
+    }
+  }
+}, 1000);
 
     // Spawn initial enemies.
     for (let i = 0; i < 50; i++) {
