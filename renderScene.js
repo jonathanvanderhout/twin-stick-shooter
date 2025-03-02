@@ -50,7 +50,7 @@ export function renderScene({
 
     // Clear the canvas and set up the transform.
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawOceanBackground(ctx, canvas, time)
+    // drawOceanBackground(ctx, canvas, time)
 
     ctx.setTransform(scale, 0, 0, scale, origin.x, origin.y);
 

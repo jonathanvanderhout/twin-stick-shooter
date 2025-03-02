@@ -168,7 +168,7 @@ export function spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, world
   const dx = playerPos2.x - pos.x;
   const dy = playerPos2.y - pos.y;
   const angle = Math.atan2(dy, dx);
-  const speed = 450; // Slightly faster than the player's speed
+  const speed = 0; // Slightly faster than the player's speed
   triBody.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
   // Set rotation to face the movement direction.
   triBody.setRotation(angle, true);
@@ -184,7 +184,7 @@ export function spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, world
  * @param {number} dt - Delta time in seconds.
  */
 export function updateTriangleEnemies(triangleEnemies, playerBody, dt) {
-  const speed = 405; // Slightly faster than player
+  const speed = 250; // Slightly faster than player
   triangleEnemies.forEach(tri => {
     const pos = tri.translation();
     const playerPos = playerBody.translation();

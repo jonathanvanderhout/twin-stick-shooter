@@ -150,8 +150,8 @@
     });
 
     // Game world and constants.
-    const worldWidth = 1400;
-    const worldHeight = 1400;
+    const worldWidth = 1920;
+    const worldHeight = 1080;
     const playerRadius = 20;
     const enemyRadius = 15;
     const bulletRadius = 5;
@@ -209,7 +209,7 @@
 
         spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
 
-        if (spawnCounter > 45) {
+        if (spawnCounter > 4) {
           spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
 
         }
@@ -294,9 +294,21 @@
       return canvas.width / worldWidth;
     }
     function getCameraOrigin(playerPos, scale) {
+      const viewWidth = canvas.width / scale;
+      const viewHeight = canvas.height / scale;
+
+      // Compute the unclamped camera position (centered on the player).
+      let camX = playerPos.x - viewWidth / 2;
+      let camY = playerPos.y - viewHeight / 2;
+
+      // Clamp the camera position to the game world boundaries.
+      camX = Math.max(0, Math.min(camX, worldWidth - viewWidth));
+      camY = Math.max(0, Math.min(camY, worldHeight - viewHeight));
+
+      // Return the transform offset (note the negative, to shift the world).
       return {
-        x: canvas.width / 2 - playerPos.x * scale,
-        y: canvas.height / 2 - playerPos.y * scale,
+        x: -camX * scale,
+        y: -camY * scale
       };
     }
 
