@@ -89,7 +89,7 @@
 </head>
 
 <body>
-  <div id="gameTitle">Gārsecg</div>
+  <div id="gameTitle">Gārsecg (Alpha Version)</div>
   <div id="healthDiv">Health: 100% | Score: 0</div>
   <canvas id="gameCanvas"></canvas>
 
@@ -201,6 +201,23 @@
     const playerColliderDesc = RAPIER.ColliderDesc.ball(playerRadius);
     physicsWorld.createCollider(playerColliderDesc, playerBody);
 
+    //enemy spawn loop
+    setInterval(() => {
+      if (gameStarted) {
+        spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+
+        spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+
+        spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+
+        // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+        // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+
+
+      }
+
+    }, 1000)
+
     // --- Spawn Regular Enemies ---
     for (let i = 0; i < 10; i++) {
       spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
@@ -212,7 +229,7 @@
     }
 
     // --- Spawn Triangle Enemies ---
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 0; i++) {
       spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
     }
 
@@ -355,7 +372,9 @@
 
     // --- Game Loop ---
     let lastTime = performance.now();
+    let time = 0;
     function gameLoop(currentTime) {
+      time += 16
       if (!gameStarted) {
         requestAnimationFrame(gameLoop);
         return;
@@ -399,7 +418,7 @@
             enemies.splice(j, 1);
             physicsWorld.removeRigidBody(bullet.body);
             bullets.splice(i, 1);
-            spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+            // spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
             score += 10;
             break;
           }
@@ -419,7 +438,7 @@
             squids.splice(j, 1);
             physicsWorld.removeRigidBody(bullet.body);
             bullets.splice(i, 1);
-            spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+            // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
             score += 10;
             break;
           }
@@ -439,7 +458,7 @@
             triangleEnemies.splice(i, 1);
             physicsWorld.removeRigidBody(bullet.body);
             bullets.splice(j, 1);
-            spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+            // spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
             score += 10;
             break;
           }
@@ -458,7 +477,7 @@
           }
           physicsWorld.removeRigidBody(enemy);
           enemies.splice(i, 1);
-          spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+          // spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
           if (playerHealth <= 0) {
             endGame();
             return;
@@ -478,7 +497,7 @@
           }
           physicsWorld.removeRigidBody(squid);
           squids.splice(i, 1);
-          spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+          // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
           if (playerHealth <= 0) {
             endGame();
             return;
@@ -498,7 +517,7 @@
           }
           physicsWorld.removeRigidBody(tri);
           triangleEnemies.splice(i, 1);
-          spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+          // spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
           if (playerHealth <= 0) {
             endGame();
             return;
@@ -560,7 +579,8 @@
         getCameraScale,
         getCameraOrigin,
         updateBubbleExplosions,
-        updateDamageExplosions
+        updateDamageExplosions,
+        time
       });
 
 

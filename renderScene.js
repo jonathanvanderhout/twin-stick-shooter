@@ -20,6 +20,7 @@
  * @param {function} params.getCameraOrigin - A function that accepts (playerPos, scale) and returns an {x, y} object.
  * @param {function} params.updateBubbleExplosions - A function to draw bubble explosions.
  * @param {function} params.updateDamageExplosions - A function to draw damage explosions.
+ * @param {number} params.time - a number needed for rendering the background
  */
 export function renderScene({
     ctx,
@@ -39,7 +40,8 @@ export function renderScene({
     getCameraScale,
     getCameraOrigin,
     updateBubbleExplosions,
-    updateDamageExplosions
+    updateDamageExplosions,
+    time
 }) {
     // Get the player's current position from its physics body.
     const playerPos = playerBody.translation();
@@ -48,6 +50,8 @@ export function renderScene({
 
     // Clear the canvas and set up the transform.
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawOceanBackground(ctx, canvas, time)
+
     ctx.setTransform(scale, 0, 0, scale, origin.x, origin.y);
 
     // Draw the grid.
@@ -326,3 +330,65 @@ export function renderScene({
 }
 
 
+function drawOceanBackground(ctx, canvas, time) {
+    // Canvas dimensions
+    const width = canvas.width / window.devicePixelRatio;
+    const height = canvas.height / window.devicePixelRatio;
+    
+    // Create gradient for deep ocean background
+    const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
+    bgGradient.addColorStop(0, '#000B14');  // Very dark blue at top
+    bgGradient.addColorStop(1, '#001A2C');  // Slightly lighter at bottom
+    
+    // Fill the background
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, width, height);
+    
+    // Create light rays effect
+    drawLightRays(ctx, width, height, time);
+    
+    // Draw sandy ocean floor with ripples
+    // drawOceanFloor(ctx, width, height, time);
+}
+
+function drawLightRays(ctx, width, height, time) {
+    // Light ray properties
+    const rayCount = 5;
+    const baseSpeed = 0.0002;
+    
+    // Draw each light ray
+    for (let i = 0; i < rayCount; i++) {
+        // Calculate ray position and size
+        const rayWidth = width * 0.2 + Math.sin(time * 0.001 + i) * width * 0.05;
+        
+        // Make rays move across the screen
+        const xPosition = ((time * baseSpeed * (0.5 + i * 0.1)) % 1.5 - 0.25) * width;
+        
+        // Create gradient for light ray
+        const rayGradient = ctx.createLinearGradient(
+            xPosition, 0,
+            xPosition + rayWidth, 0
+        );
+        
+        // Gradient with very subtle blue color
+        rayGradient.addColorStop(0, 'rgba(0, 40, 80, 0)');
+        rayGradient.addColorStop(0.5, 'rgba(30, 100, 150, 0.04)');
+        rayGradient.addColorStop(1, 'rgba(0, 40, 80, 0)');
+        
+        // Draw the ray
+        ctx.fillStyle = rayGradient;
+        ctx.globalCompositeOperation = 'lighter';
+        
+        // Make the ray shape
+        ctx.beginPath();
+        ctx.moveTo(xPosition, 0);
+        ctx.lineTo(xPosition + rayWidth, 0);
+        ctx.lineTo(xPosition + rayWidth * 1.2, height);
+        ctx.lineTo(xPosition - rayWidth * 0.2, height);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Reset composite operation
+        ctx.globalCompositeOperation = 'source-over';
+    }
+}
