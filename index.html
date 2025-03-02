@@ -10,15 +10,12 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      /* background: #000; */
       background: #041E42;
-
       font-family: 'Arial', sans-serif;
     }
 
     canvas {
       display: block;
-      /* background: #041E42; */
       background-attachment: fixed;
     }
 
@@ -75,6 +72,7 @@
       max-width: 600px;
     }
 
+    /* Existing button style */
     #modal button {
       margin-top: 20px;
       padding: 10px 20px;
@@ -84,6 +82,19 @@
       cursor: pointer;
       background-color: #5CDBFF;
       color: #041E42;
+    }
+
+    /* New style for the fullscreen button */
+    #fullscreenButton {
+      background-color: orange;
+      color: #041E42;
+    }
+
+    #gameTitle,
+    #healthDiv {
+      pointer-events: none;
+      opacity: 0.7;
+      /* Adjust the value as needed */
     }
   </style>
 </head>
@@ -99,6 +110,9 @@
       <h1>Welcome to Gārsecg</h1>
       <p><strong>Instructions:</strong> Use WASD to move your submarine and your mouse to aim. Left click to shoot and
         right click (or Space) to dash.</p>
+      <p>c will toggle the camera: follow ship or center game</p>
+      <!-- Replacing the full screen message with a button -->
+      <button id="fullscreenButton">Go Full Screen</button>
       <p>Survive as long as you can and score by destroying enemies!</p>
       <button id="beginButton">Begin</button>
     </div>
@@ -122,13 +136,10 @@
     // --- High-DPI resolution-independent canvas setup ---
     function updateCanvasResolution() {
       const dpr = window.devicePixelRatio || 1;
-      // Set internal dimensions based on CSS size * dpr.
       canvas.width = window.innerWidth * dpr;
       canvas.height = window.innerHeight * dpr;
-      // Set CSS dimensions to window size.
       canvas.style.width = window.innerWidth + "px";
       canvas.style.height = window.innerHeight + "px";
-      // Scale the drawing context.
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.imageSmoothingEnabled = false;
     }
@@ -142,8 +153,6 @@
         lastDPR = currentDPR;
       }
     }, 250);
-
-    // Also include the working resize listener from your baseline code.
     window.addEventListener("resize", () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -162,7 +171,7 @@
     let score = 0;
 
     // Fire rate and dash control.
-    const fireRate = 10; // bullets per second.
+    const fireRate = 10;
     const fireInterval = 1000 / fireRate;
     let lastShotTime = 0;
     let isShooting = false;
@@ -187,7 +196,6 @@
       physicsWorld.createCollider(colliderDesc, wallBody);
       walls.push({ x, y, width, height });
     }
-    // Four walls.
     createWall(worldWidth / 2, -50, worldWidth + 200, 100);
     createWall(worldWidth / 2, worldHeight + 50, worldWidth + 200, 100);
     createWall(-50, worldHeight / 2, 100, worldHeight + 200);
@@ -201,42 +209,43 @@
     const playerColliderDesc = RAPIER.ColliderDesc.ball(playerRadius);
     physicsWorld.createCollider(playerColliderDesc, playerBody);
 
-    //enemy spawn loop
-    let spawnCounter = 0
+    // Enemy spawn loop.
+    let spawnCounter = 0;
     setInterval(() => {
-      if (gameStarted) {
+      if (gameStarted && !document.hidden) {
         spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
-
         spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
-
         if (spawnCounter > 4) {
           spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
-
         }
-
-        // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
-        // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
-        spawnCounter += 1
+        spawnCounter += 1;
       }
-    }, 1000)
+    }, 1000);
 
-    // --- Spawn Regular Enemies ---
+    // Spawn initial enemies.
     for (let i = 0; i < 50; i++) {
       spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
     }
-
-    // --- Spawn Squid Enemies ---
     for (let i = 0; i < 10; i++) {
       spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
     }
-
-    // --- Spawn Triangle Enemies ---
     for (let i = 0; i < 0; i++) {
       spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
     }
 
     // --- Input Handling ---
     const keys = { w: false, a: false, s: false, d: false };
+    // Global variables for camera transition.
+    let cameraMode = "full"; // "follow" or "full"
+    let transitioning = false;
+    let transitionStartTime = 0;
+    const transitionDuration = 500; // in milliseconds
+    let transitionStartOrigin = { x: 0, y: 0 };
+
+    // These globals store the latest player position and scale so we can compute camera origins during toggles.
+    let lastPlayerPos = playerBody.translation();
+    let lastScale = canvas.width / worldWidth;
+
     window.addEventListener("keydown", (e) => {
       if (e.key === "w") keys.w = true;
       if (e.key === "a") keys.a = true;
@@ -247,6 +256,14 @@
           dashTriggered = true;
         }
         e.preventDefault();
+      }
+      if (e.key === "c") {
+        // When toggling, set the transition's start origin as the current camera origin.
+        transitionStartOrigin = getCameraOrigin_transition(lastPlayerPos, lastScale);
+        // Toggle camera mode.
+        cameraMode = (cameraMode === "follow") ? "full" : "follow";
+        transitioning = true;
+        transitionStartTime = performance.now();
       }
     });
     window.addEventListener("keyup", (e) => {
@@ -279,38 +296,59 @@
         e.preventDefault();
       }
     });
-    canvas.addEventListener("mouseup", () => {
-      isShooting = false;
-    });
-    canvas.addEventListener("mouseleave", () => {
-      isShooting = false;
-    });
-    canvas.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-    });
+    canvas.addEventListener("mouseup", () => { isShooting = false; });
+    canvas.addEventListener("mouseleave", () => { isShooting = false; });
+    canvas.addEventListener("contextmenu", (e) => { e.preventDefault(); });
 
     // --- Camera Setup ---
     function getCameraScale() {
       return canvas.width / worldWidth;
     }
-    function getCameraOrigin(playerPos, scale) {
+    // Follow mode: camera centered on the player.
+    function getCameraOrigin_follow(playerPos, scale) {
+      return {
+        x: canvas.width / 2 - playerPos.x * scale,
+        y: canvas.height / 2 - playerPos.y * scale,
+      };
+    }
+    // Full mode: camera clamped to the game world boundaries.
+    function getCameraOrigin_full(playerPos, scale) {
       const viewWidth = canvas.width / scale;
       const viewHeight = canvas.height / scale;
-
-      // Compute the unclamped camera position (centered on the player).
       let camX = playerPos.x - viewWidth / 2;
       let camY = playerPos.y - viewHeight / 2;
-
-      // Clamp the camera position to the game world boundaries.
-      camX = Math.max(0, Math.min(camX, worldWidth - viewWidth));
-      camY = Math.max(0, Math.min(camY, worldHeight - viewHeight));
-
-      // Return the transform offset (note the negative, to shift the world).
+      const margin = 0;
+      camX = Math.max(-margin, Math.min(camX, worldWidth - viewWidth + margin));
+      camY = Math.max(-margin, Math.min(camY, worldHeight - viewHeight + margin));
       return {
         x: -camX * scale,
         y: -camY * scale
       };
     }
+    // Transition mode: interpolates between the last recorded origin and the target origin over 0.5 seconds.
+    function getCameraOrigin_transition(playerPos, scale) {
+      if (!transitioning) {
+        return (cameraMode === "follow")
+          ? getCameraOrigin_follow(playerPos, scale)
+          : getCameraOrigin_full(playerPos, scale);
+      }
+      const currentTime = performance.now();
+      let progress = (currentTime - transitionStartTime) / transitionDuration;
+      if (progress >= 1) {
+        transitioning = false;
+        return (cameraMode === "follow")
+          ? getCameraOrigin_follow(playerPos, scale)
+          : getCameraOrigin_full(playerPos, scale);
+      }
+      const targetOrigin = (cameraMode === "follow")
+        ? getCameraOrigin_follow(playerPos, scale)
+        : getCameraOrigin_full(playerPos, scale);
+      return {
+        x: transitionStartOrigin.x + (targetOrigin.x - transitionStartOrigin.x) * progress,
+        y: transitionStartOrigin.y + (targetOrigin.y - transitionStartOrigin.y) * progress,
+      };
+    }
+    const getCameraOrigin = getCameraOrigin_transition;
 
     // --- Revised Movement Logic for the Player ---
     const movementLerp = 0.2;
@@ -318,9 +356,7 @@
     function updatePlayerMovement(dt) {
       if (dashTriggered) {
         isDashing = true;
-        setTimeout(() => {
-          isDashing = false;
-        }, 1000);
+        setTimeout(() => { isDashing = false; }, 1000);
         const playerPos = playerBody.translation();
         const scale = getCameraScale();
         const origin = getCameraOrigin(playerPos, scale);
@@ -370,7 +406,6 @@
       gameStarted = true;
       modal.style.display = "none";
     });
-
     function endGame() {
       gameStarted = false;
       modalContent.innerHTML = `
@@ -384,17 +419,31 @@
       modal.style.display = "flex";
     }
 
+    // --- Fullscreen Button Functionality ---
+    document.getElementById("fullscreenButton").addEventListener("click", () => {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) { /* Safari */
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) { /* IE11 */
+        document.documentElement.msRequestFullscreen();
+      }
+    });
+
     // --- Game Loop ---
     let lastTime = performance.now();
     let time = 0;
     function gameLoop(currentTime) {
-      time += 16
+      time += 16;
       if (!gameStarted) {
         requestAnimationFrame(gameLoop);
         return;
       }
       const dt = (currentTime - lastTime) / 1000;
       lastTime = currentTime;
+
+      lastPlayerPos = playerBody.translation();
+      lastScale = getCameraScale();
 
       updatePlayerMovement(dt);
       physicsWorld.step();
@@ -403,7 +452,6 @@
       updateSquids(squids, playerBody, currentTime, dt);
       updateTriangleEnemies(triangleEnemies, playerBody, dt);
 
-      // --- Update Bullets ---
       for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
         if (
@@ -419,7 +467,6 @@
       }
 
       const playerPos = playerBody.translation();
-      // --- Check for Bullet–Regular Enemy Collisions ---
       for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
         const bPos = bullet.body.translation();
@@ -432,14 +479,12 @@
             enemies.splice(j, 1);
             physicsWorld.removeRigidBody(bullet.body);
             bullets.splice(i, 1);
-            // spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
             score += 10;
             break;
           }
         }
       }
 
-      // --- Check for Bullet–Squid Collisions ---
       for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
         const bPos = bullet.body.translation();
@@ -452,14 +497,12 @@
             squids.splice(j, 1);
             physicsWorld.removeRigidBody(bullet.body);
             bullets.splice(i, 1);
-            // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
             score += 10;
             break;
           }
         }
       }
 
-      // --- Check for Bullet–Triangle Enemy Collisions ---
       for (let i = triangleEnemies.length - 1; i >= 0; i--) {
         const tri = triangleEnemies[i];
         const triPos = tri.translation();
@@ -472,14 +515,12 @@
             triangleEnemies.splice(i, 1);
             physicsWorld.removeRigidBody(bullet.body);
             bullets.splice(j, 1);
-            // spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
             score += 10;
             break;
           }
         }
       }
 
-      // --- Check for Enemy–Player Collisions ---
       for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
         const ePos = enemy.translation();
@@ -491,7 +532,6 @@
           }
           physicsWorld.removeRigidBody(enemy);
           enemies.splice(i, 1);
-          // spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
           if (playerHealth <= 0) {
             endGame();
             return;
@@ -499,7 +539,6 @@
         }
       }
 
-      // --- Check for Squid–Player Collisions ---
       for (let i = squids.length - 1; i >= 0; i--) {
         const squid = squids[i];
         const sPos = squid.translation();
@@ -511,7 +550,6 @@
           }
           physicsWorld.removeRigidBody(squid);
           squids.splice(i, 1);
-          // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
           if (playerHealth <= 0) {
             endGame();
             return;
@@ -519,7 +557,6 @@
         }
       }
 
-      // --- Check for Triangle Enemy–Player Collisions ---
       for (let i = triangleEnemies.length - 1; i >= 0; i--) {
         const tri = triangleEnemies[i];
         const triPos = tri.translation();
@@ -531,7 +568,6 @@
           }
           physicsWorld.removeRigidBody(tri);
           triangleEnemies.splice(i, 1);
-          // spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
           if (playerHealth <= 0) {
             endGame();
             return;
@@ -539,7 +575,6 @@
         }
       }
 
-      // --- Fire Bullet Continuously in Ship’s Facing Direction ---
       if (isShooting && currentTime - lastShotTime > fireInterval) {
         lastShotTime = currentTime;
         const playerPos = playerBody.translation();
@@ -561,7 +596,6 @@
         bullets.push({ body: bulletBody, birthTime: currentTime });
       }
 
-      // --- Update Player Rotation to Face the Mouse ---
       if (lastMouseX || lastMouseY) {
         const scale = getCameraScale();
         const origin = getCameraOrigin(playerPos, scale);
@@ -597,10 +631,7 @@
         time
       });
 
-
-
       document.getElementById("healthDiv").innerText = "Health: " + playerHealth + "% | Score: " + score;
-
       requestAnimationFrame(gameLoop);
     }
     requestAnimationFrame(gameLoop);
