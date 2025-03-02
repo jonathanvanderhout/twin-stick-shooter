@@ -202,24 +202,26 @@
     physicsWorld.createCollider(playerColliderDesc, playerBody);
 
     //enemy spawn loop
+    let spawnCounter = 0
     setInterval(() => {
       if (gameStarted) {
         spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
 
         spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
 
-        spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+        if (spawnCounter > 45) {
+          spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+
+        }
 
         // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
         // spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
-
-
+        spawnCounter += 1
       }
-
     }, 1000)
 
     // --- Spawn Regular Enemies ---
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 50; i++) {
       spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
     }
 
