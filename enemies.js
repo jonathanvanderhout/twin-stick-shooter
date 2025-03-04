@@ -28,9 +28,15 @@ export function spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, 
 
   const enemyBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y);
   const enemyBody = physicsWorld.createRigidBody(enemyBodyDesc);
+  
   const enemyColliderDesc = RAPIER.ColliderDesc.ball(enemyRadius);
   const enemyCollider = physicsWorld.createCollider(enemyColliderDesc, enemyBody);
   enemyCollider.setRestitution(0.8);
+  // Enable collision events for this collider.
+  enemyCollider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+  
+  // Tag the enemy body for collision handling.
+  enemyBody.userData = { type: "enemy" };
 
   const angle = Math.random() * Math.PI * 2;
   const speed = 100;
@@ -79,14 +85,21 @@ export function spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, 
 
   const squidBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y);
   const squidBody = physicsWorld.createRigidBody(squidBodyDesc);
+  
   const squidColliderDesc = RAPIER.ColliderDesc.ball(enemyRadius);
-  physicsWorld.createCollider(squidColliderDesc, squidBody);
+  const squidCollider = physicsWorld.createCollider(squidColliderDesc, squidBody);
+  // Enable collision events.
+  squidCollider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+  
   squidBody.setLinearDamping(2);
 
   // Custom properties for squid behavior.
   squidBody.isSquid = true;
   squidBody.nextMoveTime = 0;
   squidBody.targetAngle = squidBody.rotation();
+
+  // Tag the squid for collision handling.
+  squidBody.userData = { type: "squid" };
 
   squids.push(squidBody);
 }
@@ -159,8 +172,14 @@ export function spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, world
 
   const bodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y);
   const triBody = physicsWorld.createRigidBody(bodyDesc);
+  
   const colliderDesc = RAPIER.ColliderDesc.ball(enemyRadius);
-  physicsWorld.createCollider(colliderDesc, triBody);
+  const triCollider = physicsWorld.createCollider(colliderDesc, triBody);
+  // Enable collision events.
+  triCollider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+
+  // Tag the triangle enemy for collision handling.
+  triBody.userData = { type: "triangle" };
 
   // Set initial velocity: move toward the player.
   const pos = triBody.translation();
@@ -168,7 +187,7 @@ export function spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, world
   const dx = playerPos2.x - pos.x;
   const dy = playerPos2.y - pos.y;
   const angle = Math.atan2(dy, dx);
-  const speed = 0; // Slightly faster than the player's speed
+  const speed = 0; // You can adjust this as needed.
   triBody.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
   // Set rotation to face the movement direction.
   triBody.setRotation(angle, true);
@@ -184,7 +203,7 @@ export function spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, world
  * @param {number} dt - Delta time in seconds.
  */
 export function updateTriangleEnemies(triangleEnemies, playerBody, dt) {
-  const speed = 250; // Slightly faster than player
+  const speed = 250; // Slightly faster than player.
   triangleEnemies.forEach(tri => {
     const pos = tri.translation();
     const playerPos = playerBody.translation();
