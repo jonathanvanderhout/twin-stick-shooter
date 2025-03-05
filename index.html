@@ -101,16 +101,16 @@
           Left click to shoot and right click (or Space) to dash.
         </p>
         <p>c will toggle the camera: follow ship or center game</p>
-        <!-- Replacing the full screen message with a button -->
         <button id="fullscreenButton">Go Full Screen</button>
         <p>Survive as long as you can and score by destroying enemies!</p>
         <button id="beginButton">Begin</button>
       </div>
     </div>
     <script type="module">
-      // Import explosion effects and enemy/squid/triangle functions.
+      // Import explosion effects and enemy functions.
       import { startBubbleExplosion, updateBubbleExplosions } from "./bubbles.js";
-      import { spawnEnemy, updateEnemies, spawnSquid, updateSquids, spawnTriangleEnemy, updateTriangleEnemies } from "./enemies.js";
+      import { spawnGenericEnemy, updateAllEnemies } from "./enemies.js";
+
       import { startDamageExplosion, updateDamageExplosions } from './damageEffect.js';
       import { renderScene } from "./renderScene.js";
 
@@ -169,13 +169,10 @@
       // Create Rapier2D physics world (no gravity).
       const gravity = { x: 0, y: 0 };
       const physicsWorld = new RAPIER.World(gravity);
-      // Create the collision event queue.
       const eventQueue = new RAPIER.EventQueue(true);
 
-      // Arrays for enemies, squids, triangle enemies, and bullets.
+      // --- Unified enemy and bullet arrays ---
       const enemies = [];
-      const squids = [];
-      const triangleEnemies = [];
       const bullets = [];
 
       // --- Create Walls ---
@@ -199,17 +196,12 @@
       const playerBody = physicsWorld.createRigidBody(playerBodyDesc);
       const playerColliderDesc = RAPIER.ColliderDesc.ball(playerRadius);
       physicsWorld.createCollider(playerColliderDesc, playerBody);
-      // Tag the player for collision handling.
       playerBody.userData = { type: "player" };
 
-      // Enemy spawn loop.
-      // Import the gamePlan configuration.
+      // Enemy spawn loop using a game plan.
       import gamePlan from "./waves/gamePlan.js";
-      // Track which waves have already been triggered.
       const triggeredWaves = new Set();
-      // Assume gameStartTime is set when the game starts.
       let gameStartTime = performance.now();
-      // Update the spawn logic every second.
       const waveSpawner = setInterval(() => {
         if (gameStarted && !document.hidden) {
           const elapsedSeconds = Math.floor((performance.now() - gameStartTime) / 1000);
@@ -219,13 +211,15 @@
             wave.enemies.forEach(group => {
               for (let i = 0; i < group.count; i++) {
                 setTimeout(() => {
-                  if (group.type === "normal") {
-                    spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
-                  } else if (group.type === "squid") {
-                    spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
-                  } else if (group.type === "triangle") {
-                    spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
-                  }
+                  spawnGenericEnemy({
+                    type: group.type,
+                    physicsWorld,
+                    playerBody,
+                    worldWidth,
+                    worldHeight,
+                    enemyRadius,
+                    enemies
+                  });
                 }, group.delay * i);
               }
             });
@@ -235,13 +229,37 @@
 
       // Spawn initial enemies.
       for (let i = 0; i < 50; i++) {
-        spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+        spawnGenericEnemy({
+          type: "normal",
+          physicsWorld,
+          playerBody,
+          worldWidth,
+          worldHeight,
+          enemyRadius,
+          enemies
+        });
       }
       for (let i = 0; i < 10; i++) {
-        spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, squids });
+        spawnGenericEnemy({
+          type: "squid",
+          physicsWorld,
+          playerBody,
+          worldWidth,
+          worldHeight,
+          enemyRadius,
+          enemies
+        });
       }
       for (let i = 0; i < 0; i++) {
-        spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, triangleEnemies });
+        spawnGenericEnemy({
+          type: "triangle",
+          physicsWorld,
+          playerBody,
+          worldWidth,
+          worldHeight,
+          enemyRadius,
+          enemies
+        });
       }
 
       // --- Input Handling ---
@@ -397,7 +415,7 @@
 
       // --- Collision Handling ---
       function removeBodyFromArray(bodyToRemove) {
-        [enemies, squids, triangleEnemies, bullets].forEach(arr => {
+        [enemies, bullets].forEach(arr => {
           const index = arr.findIndex(b => b && b.handle === bodyToRemove.handle);
           if (index !== -1) {
             arr.splice(index, 1);
@@ -415,10 +433,10 @@
         const type1 = body1.userData ? body1.userData.type : null;
         const type2 = body2.userData ? body2.userData.type : null;
 
-        // Bullet colliding with enemy, squid, or triangle enemy.
+        // Bullet colliding with enemy (normal, squid, or triangle).
         if (
-          (type1 === "bullet" && (type2 === "enemy" || type2 === "squid" || type2 === "triangle")) ||
-          (type2 === "bullet" && (type1 === "enemy" || type1 === "squid" || type1 === "triangle"))
+          (type1 === "bullet" && (type2 === "enemy" || type2 === "squid" || type2 === "triangle" || type2 === "boring")) ||
+          (type2 === "bullet" && (type1 === "enemy" || type1 === "squid" || type1 === "triangle" || type1 === "boring"))
         ) {
           let bullet, target;
           if (type1 === "bullet") { bullet = body1; target = body2; }
@@ -426,17 +444,15 @@
           const pos = target.translation();
           startBubbleExplosion(pos.x, pos.y);
           physicsWorld.removeRigidBody(target);
-          bullet.shouldRemove = true
-          // physicsWorld.removeRigidBody(bullet);
+          bullet.shouldRemove = true;
           removeBodyFromArray(target);
-          // removeBodyFromArray(bullet);
           score += 10;
           return;
         }
-        // Player colliding with enemy, squid, or triangle enemy.
+        // Player colliding with enemy.
         if (
-          (type1 === "player" && (type2 === "enemy" || type2 === "squid" || type2 === "triangle")) ||
-          (type2 === "player" && (type1 === "enemy" || type1 === "squid" || type1 === "triangle"))
+          (type1 === "player" && (type2 === "enemy" || type2 === "squid" || type2 === "triangle" || type2 === "boring")) ||
+          (type2 === "player" && (type1 === "enemy" || type1 === "squid" || type1 === "triangle" || type1 === "boring"))
         ) {
           const player = type1 === "player" ? body1 : body2;
           const enemy = player === body1 ? body2 : body1;
@@ -504,20 +520,17 @@
         lastScale = getCameraScale();
 
         updatePlayerMovement(dt);
-        // Step the physics world with the event queue.
         physicsWorld.step(eventQueue);
-        // Drain collision events.
         eventQueue.drainCollisionEvents((handle1, handle2, started) => {
           if (started) {
             handleCollision(handle1, handle2);
           }
         });
 
-        updateEnemies(enemies);
-        updateSquids(squids, playerBody, currentTime, dt);
-        updateTriangleEnemies(triangleEnemies, playerBody, dt);
+        updateAllEnemies(enemies, playerBody, currentTime, dt);
 
-        // Remove bullets that have exceeded their lifetime or left the world bounds.
+
+        // Remove bullets that have exceeded their lifetime or left the bounds.
         for (let i = bullets.length - 1; i >= 0; i--) {
           const bullet = bullets[i];
           if (
@@ -578,10 +591,10 @@
           playerBody,
           isDashing,
           playerRadius,
-          enemies,
+          enemies: enemies.filter(e => e.userData.type === "enemy"),
           enemyRadius,
-          squids,
-          triangleEnemies,
+          squids: enemies.filter(e => e.userData.type === "squid"),
+          triangleEnemies: enemies.filter(e => e.userData.type === "triangle"),
           bullets,
           bulletRadius,
           getCameraScale,
