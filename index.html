@@ -1,613 +1,631 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gārsecg</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background: #041E42;
-        font-family: 'Arial', sans-serif;
-      }
-      canvas {
-        display: block;
-        background-attachment: fixed;
-      }
-      #healthDiv {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        background-color: rgba(0, 0, 40, 0.7);
-        color: #5CDBFF;
-        padding: 10px 15px;
-        font-family: 'Courier New', monospace;
-        font-size: 20px;
-        border-radius: 10px;
-        border: 2px solid #5CDBFF;
-        z-index: 1000;
-        box-shadow: 0 0 10px #5CDBFF;
-      }
-      #gameTitle {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        color: #5CDBFF;
-        font-family: 'Courier New', monospace;
-        font-size: 24px;
-        font-weight: bold;
-        text-shadow: 0 0 10px #5CDBFF;
-        z-index: 1000;
-      }
-      /* Modal Styles */
-      #modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 2000;
-      }
-      #modalContent {
-        background: #041E42;
-        padding: 20px;
-        border: 2px solid #5CDBFF;
-        border-radius: 10px;
-        color: #5CDBFF;
-        font-family: 'Courier New', monospace;
-        text-align: center;
-        width: 80%;
-        max-width: 600px;
-      }
-      /* Existing button style */
-      #modal button {
-        margin-top: 20px;
-        padding: 10px 20px;
-        font-size: 18px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        background-color: #5CDBFF;
-        color: #041E42;
-      }
-      /* New style for the fullscreen button */
-      #fullscreenButton {
-        background-color: orange;
-        color: #041E42;
-      }
-      #gameTitle,
-      #healthDiv {
-        pointer-events: none;
-        opacity: 0.7;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="gameTitle">Gārsecg (Alpha Version)</div>
-    <div id="healthDiv">Health: 100% | Score: 0</div>
-    <canvas id="gameCanvas"></canvas>
-    <!-- Modal Popup -->
-    <div id="modal">
-      <div id="modalContent">
-        <h1>Welcome to Gārsecg</h1>
-        <p>
-          <strong>Instructions:</strong> Use WASD to move your submarine and your mouse to aim.
-          Left click to shoot and right click (or Space) to dash.
-        </p>
-        <p>c will toggle the camera: follow ship or center game</p>
-        <button id="fullscreenButton">Go Full Screen</button>
-        <p>Survive as long as you can and score by destroying enemies!</p>
-        <button id="beginButton">Begin</button>
-      </div>
+
+<head>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gārsecg</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #041E42;
+      font-family: 'Arial', sans-serif;
+    }
+
+    canvas {
+      display: block;
+      background-attachment: fixed;
+    }
+
+    #healthDiv {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 40, 0.7);
+      color: #5CDBFF;
+      padding: 10px 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      border-radius: 10px;
+      border: 2px solid #5CDBFF;
+      z-index: 1000;
+      box-shadow: 0 0 10px #5CDBFF;
+    }
+
+    #gameTitle {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: #5CDBFF;
+      font-family: 'Courier New', monospace;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 0 0 10px #5CDBFF;
+      z-index: 1000;
+    }
+
+    /* Modal Styles */
+    #modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    #modalContent {
+      background: #041E42;
+      padding: 20px;
+      border: 2px solid #5CDBFF;
+      border-radius: 10px;
+      color: #5CDBFF;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+      width: 80%;
+      max-width: 600px;
+    }
+
+    /* Existing button style */
+    #modal button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #5CDBFF;
+      color: #041E42;
+    }
+
+    /* New style for the fullscreen button */
+    #fullscreenButton {
+      background-color: orange;
+      color: #041E42;
+    }
+
+    #gameTitle,
+    #healthDiv {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="gameTitle">Gārsecg (Alpha Version)</div>
+  <div id="healthDiv">Health: 100% | Score: 0</div>
+  <canvas id="gameCanvas"></canvas>
+  <!-- Modal Popup -->
+  <div id="modal">
+    <div id="modalContent">
+      <h1>Welcome to Gārsecg</h1>
+      <p>
+        <strong>Instructions:</strong> Use WASD to move your submarine and your mouse to aim.
+        Left click to shoot and right click (or Space) to dash.
+      </p>
+      <p>c will toggle the camera: follow ship or center game</p>
+      <button id="fullscreenButton">Go Full Screen</button>
+      <p>Survive as long as you can and score by destroying enemies!</p>
+      <button id="beginButton">Begin</button>
     </div>
-    <script type="module">
-      // Import explosion effects and enemy functions.
-      import { startBubbleExplosion, updateBubbleExplosions } from "./bubbles.js";
-      import { spawnGenericEnemy, updateAllEnemies } from "./enemies.js";
+  </div>
+  <script type="module">
+    // Import explosion effects and enemy functions.
+    import { startBubbleExplosion, updateBubbleExplosions } from "./bubbles.js";
+    import { spawnGenericEnemy, updateAllEnemies } from "./enemies.js";
+    import { startDamageExplosion, updateDamageExplosions } from './damageEffect.js';
+    import { renderScene } from "./renderScene.js";
 
-      import { startDamageExplosion, updateDamageExplosions } from './damageEffect.js';
-      import { renderScene } from "./renderScene.js";
+    // Import Rapier2D (compat version) from Skypack.
+    const shotSound = new Audio("shot.wav"); // Ensure this file exists
+    import * as RAPIER from "https://cdn.skypack.dev/@dimforge/rapier2d-compat";
+    await RAPIER.init();
 
-      // Import Rapier2D (compat version) from Skypack.
-      const shotSound = new Audio("shot.wav"); // Ensure this file exists
-      import * as RAPIER from "https://cdn.skypack.dev/@dimforge/rapier2d-compat";
-      await RAPIER.init();
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
 
-      const canvas = document.getElementById("gameCanvas");
-      const ctx = canvas.getContext("2d");
-
-      // --- High-DPI resolution-independent canvas setup ---
-      function updateCanvasResolution() {
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
-        canvas.style.width = window.innerWidth + "px";
-        canvas.style.height = window.innerHeight + "px";
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.imageSmoothingEnabled = false;
+    // --- High-DPI resolution-independent canvas setup ---
+    function updateCanvasResolution() {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = window.innerWidth + "px";
+      canvas.style.height = window.innerHeight + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+    }
+    updateCanvasResolution();
+    window.addEventListener("resize", updateCanvasResolution);
+    let lastDPR = window.devicePixelRatio || 1;
+    setInterval(() => {
+      const currentDPR = window.devicePixelRatio || 1;
+      if (currentDPR !== lastDPR) {
+        updateCanvasResolution();
+        lastDPR = currentDPR;
       }
-      updateCanvasResolution();
-      window.addEventListener("resize", updateCanvasResolution);
-      let lastDPR = window.devicePixelRatio || 1;
-      setInterval(() => {
-        const currentDPR = window.devicePixelRatio || 1;
-        if (currentDPR !== lastDPR) {
-          updateCanvasResolution();
-          lastDPR = currentDPR;
+    }, 250);
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // Game world and constants.
+    const worldWidth = 1920;
+    const worldHeight = 1080;
+    const playerRadius = 20;
+    const enemyRadius = 15;
+    const bulletRadius = 5;
+    const maxPlayerSpeed = 400;
+    const bulletSpeed = 1000;
+    const bulletLifetime = 1000;
+    let playerHealth = 100;
+    let score = 0;
+
+    // Fire rate and dash control.
+    const fireRate = 10;
+    const fireInterval = 1000 / fireRate; // in milliseconds
+    let lastShotTime = 0;
+    let isShooting = false;
+    let dashTriggered = false;
+
+    // Declare accumulator for bullet timing
+    let bulletAccumulator = 0;
+
+    // Create Rapier2D physics world (no gravity).
+    const gravity = { x: 0, y: 0 };
+    const physicsWorld = new RAPIER.World(gravity);
+    const eventQueue = new RAPIER.EventQueue(true);
+
+    // --- Unified enemy and bullet arrays ---
+    const enemies = [];
+    const bullets = [];
+
+    // --- Create Walls ---
+    const walls = [];
+    function createWall(x, y, width, height) {
+      const bodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(x, y);
+      const wallBody = physicsWorld.createRigidBody(bodyDesc);
+      const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2);
+      physicsWorld.createCollider(colliderDesc, wallBody);
+      walls.push({ x, y, width, height });
+    }
+    createWall(worldWidth / 2, -50, worldWidth + 200, 100);
+    createWall(worldWidth / 2, worldHeight + 50, worldWidth + 200, 100);
+    createWall(-50, worldHeight / 2, 100, worldHeight + 200);
+    createWall(worldWidth + 50, worldHeight / 2, 100, worldHeight + 200);
+
+    // --- Create the Player ---
+    const playerBodyDesc = RAPIER.RigidBodyDesc.dynamic()
+      .setTranslation(worldWidth / 2, worldHeight / 2)
+      .setCcdEnabled(true);
+    const playerBody = physicsWorld.createRigidBody(playerBodyDesc);
+    const playerColliderDesc = RAPIER.ColliderDesc.ball(playerRadius);
+    physicsWorld.createCollider(playerColliderDesc, playerBody);
+    playerBody.userData = { type: "player" };
+
+    // Enemy spawn loop using a game plan.
+    import gamePlan from "./waves/gamePlan.js";
+    const triggeredWaves = new Set();
+    let gameStartTime = performance.now();
+    const waveSpawner = setInterval(() => {
+      if (gameStarted && !document.hidden) {
+        const elapsedSeconds = Math.floor((performance.now() - gameStartTime) / 1000);
+        if (gamePlan.hasOwnProperty(elapsedSeconds.toString()) && !triggeredWaves.has(elapsedSeconds)) {
+          triggeredWaves.add(elapsedSeconds);
+          const wave = gamePlan[elapsedSeconds.toString()];
+          wave.enemies.forEach(group => {
+            for (let i = 0; i < group.count; i++) {
+              setTimeout(() => {
+                spawnGenericEnemy({
+                  type: group.type,
+                  physicsWorld,
+                  playerBody,
+                  worldWidth,
+                  worldHeight,
+                  enemyRadius,
+                  enemies
+                });
+              }, group.delay * i);
+            }
+          });
         }
-      }, 250);
-      window.addEventListener("resize", () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+      }
+    }, 1000);
+
+    // Spawn initial enemies.
+    for (let i = 0; i < 50; i++) {
+      spawnGenericEnemy({
+        type: "normal",
+        physicsWorld,
+        playerBody,
+        worldWidth,
+        worldHeight,
+        enemyRadius,
+        enemies
       });
-
-      // Game world and constants.
-      const worldWidth = 1920;
-      const worldHeight = 1080;
-      const playerRadius = 20;
-      const enemyRadius = 15;
-      const bulletRadius = 5;
-      const maxPlayerSpeed = 400;
-      const bulletSpeed = 1000;
-      const bulletLifetime = 1000;
-      let playerHealth = 100;
-      let score = 0;
-
-      // Fire rate and dash control.
-      const fireRate = 10;
-      const fireInterval = 1000 / fireRate;
-      let lastShotTime = 0;
-      let isShooting = false;
-      let dashTriggered = false;
-
-      // Create Rapier2D physics world (no gravity).
-      const gravity = { x: 0, y: 0 };
-      const physicsWorld = new RAPIER.World(gravity);
-      const eventQueue = new RAPIER.EventQueue(true);
-
-      // --- Unified enemy and bullet arrays ---
-      const enemies = [];
-      const bullets = [];
-
-      // --- Create Walls ---
-      const walls = [];
-      function createWall(x, y, width, height) {
-        const bodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(x, y);
-        const wallBody = physicsWorld.createRigidBody(bodyDesc);
-        const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2);
-        physicsWorld.createCollider(colliderDesc, wallBody);
-        walls.push({ x, y, width, height });
-      }
-      createWall(worldWidth / 2, -50, worldWidth + 200, 100);
-      createWall(worldWidth / 2, worldHeight + 50, worldWidth + 200, 100);
-      createWall(-50, worldHeight / 2, 100, worldHeight + 200);
-      createWall(worldWidth + 50, worldHeight / 2, 100, worldHeight + 200);
-
-      // --- Create the Player ---
-      const playerBodyDesc = RAPIER.RigidBodyDesc.dynamic()
-        .setTranslation(worldWidth / 2, worldHeight / 2)
-        .setCcdEnabled(true);
-      const playerBody = physicsWorld.createRigidBody(playerBodyDesc);
-      const playerColliderDesc = RAPIER.ColliderDesc.ball(playerRadius);
-      physicsWorld.createCollider(playerColliderDesc, playerBody);
-      playerBody.userData = { type: "player" };
-
-      // Enemy spawn loop using a game plan.
-      import gamePlan from "./waves/gamePlan.js";
-      const triggeredWaves = new Set();
-      let gameStartTime = performance.now();
-      const waveSpawner = setInterval(() => {
-        if (gameStarted && !document.hidden) {
-          const elapsedSeconds = Math.floor((performance.now() - gameStartTime) / 1000);
-          if (gamePlan.hasOwnProperty(elapsedSeconds.toString()) && !triggeredWaves.has(elapsedSeconds)) {
-            triggeredWaves.add(elapsedSeconds);
-            const wave = gamePlan[elapsedSeconds.toString()];
-            wave.enemies.forEach(group => {
-              for (let i = 0; i < group.count; i++) {
-                setTimeout(() => {
-                  spawnGenericEnemy({
-                    type: group.type,
-                    physicsWorld,
-                    playerBody,
-                    worldWidth,
-                    worldHeight,
-                    enemyRadius,
-                    enemies
-                  });
-                }, group.delay * i);
-              }
-            });
-          }
-        }
-      }, 1000);
-
-      // Spawn initial enemies.
-      for (let i = 0; i < 50; i++) {
-        spawnGenericEnemy({
-          type: "normal",
-          physicsWorld,
-          playerBody,
-          worldWidth,
-          worldHeight,
-          enemyRadius,
-          enemies
-        });
-      }
-      for (let i = 0; i < 10; i++) {
-        spawnGenericEnemy({
-          type: "squid",
-          physicsWorld,
-          playerBody,
-          worldWidth,
-          worldHeight,
-          enemyRadius,
-          enemies
-        });
-      }
-      for (let i = 0; i < 0; i++) {
-        spawnGenericEnemy({
-          type: "triangle",
-          physicsWorld,
-          playerBody,
-          worldWidth,
-          worldHeight,
-          enemyRadius,
-          enemies
-        });
-      }
-
-      // --- Input Handling ---
-      const keys = { w: false, a: false, s: false, d: false };
-      let cameraMode = "full"; // "follow" or "full"
-      let transitioning = false;
-      let transitionStartTime = 0;
-      const transitionDuration = 500;
-      let transitionStartOrigin = { x: 0, y: 0 };
-      let lastPlayerPos = playerBody.translation();
-      let lastScale = canvas.width / worldWidth;
-      window.addEventListener("keydown", (e) => {
-        if (e.key === "w") keys.w = true;
-        if (e.key === "a") keys.a = true;
-        if (e.key === "s") keys.s = true;
-        if (e.key === "d") keys.d = true;
-        if (e.code === "Space") {
-          if (!isDashing) {
-            dashTriggered = true;
-          }
-          e.preventDefault();
-        }
-        if (e.key === "c") {
-          transitionStartOrigin = getCameraOrigin_transition(lastPlayerPos, lastScale);
-          cameraMode = (cameraMode === "follow") ? "full" : "follow";
-          transitioning = true;
-          transitionStartTime = performance.now();
-        }
+    }
+    for (let i = 0; i < 10; i++) {
+      spawnGenericEnemy({
+        type: "squid",
+        physicsWorld,
+        playerBody,
+        worldWidth,
+        worldHeight,
+        enemyRadius,
+        enemies
       });
-      window.addEventListener("keyup", (e) => {
-        if (e.key === "w") keys.w = false;
-        if (e.key === "a") keys.a = false;
-        if (e.key === "s") keys.s = false;
-        if (e.key === "d") keys.d = false;
-      });
-      let lastMouseX = 0;
-      let lastMouseY = 0;
-      let canvasRect = canvas.getBoundingClientRect();
-      window.addEventListener("resize", () => {
-        canvasRect = canvas.getBoundingClientRect();
-      });
-      canvas.addEventListener("mousemove", (e) => {
-        lastMouseX = (e.clientX - canvasRect.left) * (canvas.width / canvasRect.width);
-        lastMouseY = (e.clientY - canvasRect.top) * (canvas.height / canvasRect.height);
-      });
-      canvas.addEventListener("mousedown", (e) => {
-        if (e.button === 0) {
-          isShooting = true;
-        } else if (e.button === 2) {
-          if (!isDashing) {
-            dashTriggered = true;
-          }
-          e.preventDefault();
-        }
-      });
-      canvas.addEventListener("mouseup", () => { isShooting = false; });
-      canvas.addEventListener("mouseleave", () => { isShooting = false; });
-      canvas.addEventListener("contextmenu", (e) => { e.preventDefault(); });
+    }
 
-      // --- Camera Setup ---
-      function getCameraScale() {
-        return canvas.width / worldWidth;
-      }
-      function getCameraOrigin_follow(playerPos, scale) {
-        return {
-          x: canvas.width / 2 - playerPos.x * scale,
-          y: canvas.height / 2 - playerPos.y * scale,
-        };
-      }
-      function getCameraOrigin_full(playerPos, scale) {
-        const viewWidth = canvas.width / scale;
-        const viewHeight = canvas.height / scale;
-        let camX = playerPos.x - viewWidth / 2;
-        let camY = playerPos.y - viewHeight / 2;
-        const margin = 0;
-        camX = Math.max(-margin, Math.min(camX, worldWidth - viewWidth + margin));
-        camY = Math.max(-margin, Math.min(camY, worldHeight - viewHeight + margin));
-        return {
-          x: -camX * scale,
-          y: -camY * scale
-        };
-      }
-      function getCameraOrigin_transition(playerPos, scale) {
-        if (!transitioning) {
-          return (cameraMode === "follow")
-            ? getCameraOrigin_follow(playerPos, scale)
-            : getCameraOrigin_full(playerPos, scale);
+    // --- Input Handling ---
+    const keys = { w: false, a: false, s: false, d: false };
+    let cameraMode = "full"; // "follow" or "full"
+    let transitioning = false;
+    let transitionStartTime = 0;
+    const transitionDuration = 500;
+    let transitionStartOrigin = { x: 0, y: 0 };
+    let lastPlayerPos = playerBody.translation();
+    let lastScale = canvas.width / worldWidth;
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "w") keys.w = true;
+      if (e.key === "a") keys.a = true;
+      if (e.key === "s") keys.s = true;
+      if (e.key === "d") keys.d = true;
+      if (e.code === "Space") {
+        if (!isDashing) {
+          dashTriggered = true;
         }
-        const currentTime = performance.now();
-        let progress = (currentTime - transitionStartTime) / transitionDuration;
-        if (progress >= 1) {
-          transitioning = false;
-          return (cameraMode === "follow")
-            ? getCameraOrigin_follow(playerPos, scale)
-            : getCameraOrigin_full(playerPos, scale);
+        e.preventDefault();
+      }
+      if (e.key === "c") {
+        transitionStartOrigin = getCameraOrigin_transition(lastPlayerPos, lastScale);
+        cameraMode = (cameraMode === "follow") ? "full" : "follow";
+        transitioning = true;
+        transitionStartTime = performance.now();
+      }
+    });
+    window.addEventListener("keyup", (e) => {
+      if (e.key === "w") keys.w = false;
+      if (e.key === "a") keys.a = false;
+      if (e.key === "s") keys.s = false;
+      if (e.key === "d") keys.d = false;
+    });
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let canvasRect = canvas.getBoundingClientRect();
+    window.addEventListener("resize", () => {
+      canvasRect = canvas.getBoundingClientRect();
+    });
+    canvas.addEventListener("mousemove", (e) => {
+      lastMouseX = (e.clientX - canvasRect.left) * (canvas.width / canvasRect.width);
+      lastMouseY = (e.clientY - canvasRect.top) * (canvas.height / canvasRect.height);
+    });
+    canvas.addEventListener("mousedown", (e) => {
+      if (e.button === 0) {
+        isShooting = true;
+      } else if (e.button === 2) {
+        if (!isDashing) {
+          dashTriggered = true;
         }
-        const targetOrigin = (cameraMode === "follow")
+        e.preventDefault();
+      }
+    });
+    canvas.addEventListener("mouseup", () => { isShooting = false; });
+    canvas.addEventListener("mouseleave", () => { isShooting = false; });
+    canvas.addEventListener("contextmenu", (e) => { e.preventDefault(); });
+
+    // --- Camera Setup ---
+    function getCameraScale() {
+      return canvas.width / worldWidth;
+    }
+    function getCameraOrigin_follow(playerPos, scale) {
+      return {
+        x: canvas.width / 2 - playerPos.x * scale,
+        y: canvas.height / 2 - playerPos.y * scale,
+      };
+    }
+    function getCameraOrigin_full(playerPos, scale) {
+      const viewWidth = canvas.width / scale;
+      const viewHeight = canvas.height / scale;
+      let camX = playerPos.x - viewWidth / 2;
+      let camY = playerPos.y - viewHeight / 2;
+      const margin = 0;
+      camX = Math.max(-margin, Math.min(camX, worldWidth - viewWidth + margin));
+      camY = Math.max(-margin, Math.min(camY, worldHeight - viewHeight + margin));
+      return {
+        x: -camX * scale,
+        y: -camY * scale
+      };
+    }
+    function getCameraOrigin_transition(playerPos, scale) {
+      if (!transitioning) {
+        return (cameraMode === "follow")
           ? getCameraOrigin_follow(playerPos, scale)
           : getCameraOrigin_full(playerPos, scale);
-        return {
-          x: transitionStartOrigin.x + (targetOrigin.x - transitionStartOrigin.x) * progress,
-          y: transitionStartOrigin.y + (targetOrigin.y - transitionStartOrigin.y) * progress,
-        };
       }
-      const getCameraOrigin = getCameraOrigin_transition;
-
-      // --- Revised Movement Logic for the Player ---
-      const movementLerp = 0.2;
-      let isDashing = false;
-      function updatePlayerMovement(dt) {
-        if (dashTriggered) {
-          isDashing = true;
-          setTimeout(() => { isDashing = false; }, 1000);
-          const playerPos = playerBody.translation();
-          const scale = getCameraScale();
-          const origin = getCameraOrigin(playerPos, scale);
-          const worldMouseX = (lastMouseX - origin.x) / scale;
-          const worldMouseY = (lastMouseY - origin.y) / scale;
-          const dx = worldMouseX - playerPos.x;
-          const dy = worldMouseY - playerPos.y;
-          const len = Math.hypot(dx, dy);
-          if (len > 0) {
-            const normX = dx / len;
-            const normY = dy / len;
-            const dashSpeed = 5000;
-            playerBody.setLinvel({ x: normX * dashSpeed, y: normY * dashSpeed }, true);
-          }
-          dashTriggered = false;
-          return;
-        }
-        const currentVel = playerBody.linvel();
-        let targetVel = { x: 0, y: 0 };
-        if (keys.w || keys.a || keys.s || keys.d) {
-          let inputX = 0, inputY = 0;
-          if (keys.w) inputY -= 1;
-          if (keys.s) inputY += 1;
-          if (keys.a) inputX -= 1;
-          if (keys.d) inputX += 1;
-          const len = Math.hypot(inputX, inputY);
-          if (len > 0) {
-            inputX /= len;
-            inputY /= len;
-          }
-          targetVel.x = inputX * maxPlayerSpeed;
-          targetVel.y = inputY * maxPlayerSpeed;
-        }
-        const newVel = {
-          x: currentVel.x + (targetVel.x - currentVel.x) * movementLerp,
-          y: currentVel.y + (targetVel.y - currentVel.y) * movementLerp,
-        };
-        playerBody.setLinvel(newVel, true);
+      const currentTime = performance.now();
+      let progress = (currentTime - transitionStartTime) / transitionDuration;
+      if (progress >= 1) {
+        transitioning = false;
+        return (cameraMode === "follow")
+          ? getCameraOrigin_follow(playerPos, scale)
+          : getCameraOrigin_full(playerPos, scale);
       }
+      const targetOrigin = (cameraMode === "follow")
+        ? getCameraOrigin_follow(playerPos, scale)
+        : getCameraOrigin_full(playerPos, scale);
+      return {
+        x: transitionStartOrigin.x + (targetOrigin.x - transitionStartOrigin.x) * progress,
+        y: transitionStartOrigin.y + (targetOrigin.y - transitionStartOrigin.y) * progress,
+      };
+    }
+    const getCameraOrigin = getCameraOrigin_transition;
 
-      // --- Collision Handling ---
-      function removeBodyFromArray(bodyToRemove) {
-        [enemies, bullets].forEach(arr => {
-          const index = arr.findIndex(b => b && b.handle === bodyToRemove.handle);
-          if (index !== -1) {
-            arr.splice(index, 1);
-          }
-        });
-      }
+    // --- Revised Movement Logic for the Player ---
+    const movementLerp = 0.2;
+    let isDashing = false;
 
-      function handleCollision(handle1, handle2) {
-        const collider1 = physicsWorld.getCollider(handle1);
-        const collider2 = physicsWorld.getCollider(handle2);
-        if (!collider1 || !collider2) return;
-        const body1 = collider1.parent();
-        const body2 = collider2.parent();
-        if (!body1 || !body2) return;
-        const type1 = body1.userData ? body1.userData.type : null;
-        const type2 = body2.userData ? body2.userData.type : null;
-
-        // Bullet colliding with enemy (normal, squid, or triangle).
-        if (
-          (type1 === "bullet" && (type2 === "enemy" || type2 === "squid" || type2 === "triangle" || type2 === "boring")) ||
-          (type2 === "bullet" && (type1 === "enemy" || type1 === "squid" || type1 === "triangle" || type1 === "boring"))
-        ) {
-          let bullet, target;
-          if (type1 === "bullet") { bullet = body1; target = body2; }
-          else { bullet = body2; target = body1; }
-          const pos = target.translation();
-          startBubbleExplosion(pos.x, pos.y);
-          physicsWorld.removeRigidBody(target);
-          bullet.shouldRemove = true;
-          removeBodyFromArray(target);
-          score += 10;
-          return;
+    function updatePlayerMovement(dt) {
+      if (dashTriggered) {
+        isDashing = true;
+        setTimeout(() => { isDashing = false; }, 1000);
+        const playerPos = playerBody.translation();
+        const scale = getCameraScale();
+        const origin = getCameraOrigin(playerPos, scale);
+        const worldMouseX = (lastMouseX - origin.x) / scale;
+        const worldMouseY = (lastMouseY - origin.y) / scale;
+        const dx = worldMouseX - playerPos.x;
+        const dy = worldMouseY - playerPos.y;
+        const len = Math.hypot(dx, dy);
+        if (len > 0) {
+          const normX = dx / len;
+          const normY = dy / len;
+          const dashSpeed = 5000;
+          playerBody.setLinvel({ x: normX * dashSpeed, y: normY * dashSpeed }, true);
         }
-        // Player colliding with enemy.
-        if (
-          (type1 === "player" && (type2 === "enemy" || type2 === "squid" || type2 === "triangle" || type2 === "boring")) ||
-          (type2 === "player" && (type1 === "enemy" || type1 === "squid" || type1 === "triangle" || type1 === "boring"))
-        ) {
-          const player = type1 === "player" ? body1 : body2;
-          const enemy = player === body1 ? body2 : body1;
-          const pos = enemy.translation();
-          startBubbleExplosion(pos.x, pos.y);
-          if (!isDashing) {
-            playerHealth -= 10;
-            startDamageExplosion(player.translation().x, player.translation().y);
-          }
-          physicsWorld.removeRigidBody(enemy);
-          removeBodyFromArray(enemy);
-          if (playerHealth <= 0) {
-            endGame();
-          }
-          return;
-        }
+        dashTriggered = false;
+        return;
       }
+      const currentVel = playerBody.linvel();
+      let targetVel = { x: 0, y: 0 };
+      if (keys.w || keys.a || keys.s || keys.d) {
+        let inputX = 0, inputY = 0;
+        if (keys.w) inputY -= 1;
+        if (keys.s) inputY += 1;
+        if (keys.a) inputX -= 1;
+        if (keys.d) inputX += 1;
+        const len = Math.hypot(inputX, inputY);
+        if (len > 0) {
+          inputX /= len;
+          inputY /= len;
+        }
+        targetVel.x = inputX * maxPlayerSpeed;
+        targetVel.y = inputY * maxPlayerSpeed;
+      }
+      const newVel = {
+        x: currentVel.x + (targetVel.x - currentVel.x) * movementLerp,
+        y: currentVel.y + (targetVel.y - currentVel.y) * movementLerp,
+      };
+      playerBody.setLinvel(newVel, true);
+    }
 
-      // --- Modal and Game Start/Restart Logic ---
-      let gameStarted = false;
-      const modal = document.getElementById("modal");
-      const modalContent = document.getElementById("modalContent");
-      const beginButton = document.getElementById("beginButton");
-      beginButton.addEventListener("click", () => {
-        gameStarted = true;
-        modal.style.display = "none";
+    // --- Collision Handling ---
+    function removeBodyFromArray(bodyToRemove) {
+      [enemies].forEach(arr => {
+        const index = arr.findIndex(b => b && b.handle === bodyToRemove.handle);
+        if (index !== -1) {
+          arr.splice(index, 1);
+        }
       });
-      function endGame() {
-        gameStarted = false;
-        modalContent.innerHTML = `
+    }
+
+    function handleCollision(handle1, handle2) {
+      const collider1 = physicsWorld.getCollider(handle1);
+      const collider2 = physicsWorld.getCollider(handle2);
+      if (!collider1 || !collider2) return;
+      const body1 = collider1.parent();
+      const body2 = collider2.parent();
+      if (!body1 || !body2) return;
+      const type1 = body1.userData ? body1.userData.type : null;
+      const type2 = body2.userData ? body2.userData.type : null;
+
+      // Bullet colliding with enemy (normal, squid, or triangle).
+      if (
+        (type1 === "bullet" && (type2 === "enemy" || type2 === "squid" || type2 === "triangle" || type2 === "boring")) ||
+        (type2 === "bullet" && (type1 === "enemy" || type1 === "squid" || type1 === "triangle" || type1 === "boring"))
+      ) {
+        let bullet, target;
+        if (type1 === "bullet") { bullet = body1; target = body2; }
+        else { bullet = body2; target = body1; }
+        const pos = target.translation();
+        startBubbleExplosion(pos.x, pos.y);
+        physicsWorld.removeRigidBody(target);
+        bullet.shouldRemove = true;
+        removeBodyFromArray(target);
+        score += 10;
+        return;
+      }
+      // Player colliding with enemy.
+      if (
+        (type1 === "player" && (type2 === "enemy" || type2 === "squid" || type2 === "triangle" || type2 === "boring")) ||
+        (type2 === "player" && (type1 === "enemy" || type1 === "squid" || type1 === "triangle" || type1 === "boring"))
+      ) {
+        const player = type1 === "player" ? body1 : body2;
+        const enemy = player === body1 ? body2 : body1;
+        const pos = enemy.translation();
+        startBubbleExplosion(pos.x, pos.y);
+        if (!isDashing) {
+          playerHealth -= 10;
+          startDamageExplosion(player.translation().x, player.translation().y);
+        }
+        physicsWorld.removeRigidBody(enemy);
+        removeBodyFromArray(enemy);
+        if (playerHealth <= 0) {
+          endGame();
+        }
+        return;
+      }
+    }
+
+    // --- Modal and Game Start/Restart Logic ---
+    let gameStarted = false;
+    const modal = document.getElementById("modal");
+    const modalContent = document.getElementById("modalContent");
+    const beginButton = document.getElementById("beginButton");
+    beginButton.addEventListener("click", () => {
+      gameStarted = true;
+      modal.style.display = "none";
+    });
+    function endGame() {
+      gameStarted = false;
+      modalContent.innerHTML = `
           <h1>Game Over</h1>
           <p>Your Score: ${score}</p>
           <button id="playAgain">Play Again</button>
         `;
-        document.getElementById("playAgain").addEventListener("click", () => {
-          location.reload();
-        });
-        modal.style.display = "flex";
+      document.getElementById("playAgain").addEventListener("click", () => {
+        location.reload();
+      });
+      modal.style.display = "flex";
+    }
+
+    // --- Fullscreen Button Functionality ---
+    document.getElementById("fullscreenButton").addEventListener("click", () => {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) {
+        document.documentElement.msRequestFullscreen();
+      }
+    });
+
+    // --- Function to create a bullet ---
+    function createBullet(timestamp) {
+      const playerPos = playerBody.translation();
+      const shipAngle = playerBody.rotation();
+      const gunOffset = playerRadius + 10;
+      const bulletStartX = playerPos.x + Math.cos(shipAngle) * gunOffset;
+      const bulletStartY = playerPos.y + Math.sin(shipAngle) * gunOffset;
+      const bulletBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(bulletStartX, bulletStartY);
+      const bulletBody = physicsWorld.createRigidBody(bulletBodyDesc);
+      const bulletColliderDesc = RAPIER.ColliderDesc.ball(bulletRadius);
+      physicsWorld.createCollider(bulletColliderDesc, bulletBody);
+      bulletBody.setLinvel({
+        x: Math.cos(shipAngle) * bulletSpeed,
+        y: Math.sin(shipAngle) * bulletSpeed
+      }, true);
+      bulletBody.userData = { type: "bullet" };
+      const soundClone = shotSound.cloneNode();
+      soundClone.volume = 0.02;
+      soundClone.play();
+      bullets.push({ body: bulletBody, birthTime: timestamp });
+    }
+
+    // --- Game Loop ---
+    let lastTime = performance.now();
+    let time = 0;
+    function gameLoop(currentTime) {
+      // Calculate time delta in milliseconds and seconds.
+      const deltaMs = currentTime - lastTime;
+      const dt = deltaMs / 1000;
+      lastTime = currentTime;
+
+      if (!gameStarted) {
+        requestAnimationFrame(gameLoop);
+        return;
+      }
+      
+      time += 16;
+      lastPlayerPos = playerBody.translation();
+      lastScale = getCameraScale();
+
+      updatePlayerMovement(dt);
+
+      // Use the bullet accumulator to generate the correct number of bullets.
+      if (isShooting) {
+        bulletAccumulator += deltaMs;
+        while (bulletAccumulator >= fireInterval) {
+          bulletAccumulator -= fireInterval;
+          createBullet(currentTime);
+        }
+      } else {
+        bulletAccumulator = 0;
       }
 
-      // --- Fullscreen Button Functionality ---
-      document.getElementById("fullscreenButton").addEventListener("click", () => {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen();
-        } else if (document.documentElement.webkitRequestFullscreen) {
-          document.documentElement.webkitRequestFullscreen();
-        } else if (document.documentElement.msRequestFullscreen) {
-          document.documentElement.msRequestFullscreen();
+      physicsWorld.step(eventQueue);
+      eventQueue.drainCollisionEvents((handle1, handle2, started) => {
+        if (started) {
+          handleCollision(handle1, handle2);
         }
       });
+      
+      updateAllEnemies(enemies, playerBody, currentTime, dt);
 
-      // --- Game Loop ---
-      let lastTime = performance.now();
-      let time = 0;
-      function gameLoop(currentTime) {
-        time += 16;
-        if (!gameStarted) {
-          requestAnimationFrame(gameLoop);
-          return;
+      // Remove bullets that have exceeded their lifetime or left the bounds.
+      for (let i = bullets.length - 1; i >= 0; i--) {
+        const bullet = bullets[i];
+        if (
+          bullet.body.shouldRemove ||
+          currentTime - bullet.birthTime > bulletLifetime ||
+          bullet.body.translation().x < 0 ||
+          bullet.body.translation().x > worldWidth ||
+          bullet.body.translation().y < 0 ||
+          bullet.body.translation().y > worldHeight
+        ) {
+          physicsWorld.removeRigidBody(bullet.body);
+          bullets[i] = bullets[bullets.length - 1];
+          bullets.pop();
         }
-        const dt = (currentTime - lastTime) / 1000;
-        lastTime = currentTime;
-
-        lastPlayerPos = playerBody.translation();
-        lastScale = getCameraScale();
-
-        updatePlayerMovement(dt);
-        physicsWorld.step(eventQueue);
-        eventQueue.drainCollisionEvents((handle1, handle2, started) => {
-          if (started) {
-            handleCollision(handle1, handle2);
-          }
-        });
-
-        updateAllEnemies(enemies, playerBody, currentTime, dt);
-
-
-        // Remove bullets that have exceeded their lifetime or left the bounds.
-        for (let i = bullets.length - 1; i >= 0; i--) {
-          const bullet = bullets[i];
-          if (
-            bullet.body.shouldRemove ||
-            currentTime - bullet.birthTime > bulletLifetime ||
-            bullet.body.translation().x < 0 ||
-            bullet.body.translation().x > worldWidth ||
-            bullet.body.translation().y < 0 ||
-            bullet.body.translation().y > worldHeight
-          ) {
-            physicsWorld.removeRigidBody(bullet.body);
-            bullets.splice(i, 1);
-          }
-        }
-
-        // Shooting logic.
-        if (isShooting && currentTime - lastShotTime > fireInterval) {
-          lastShotTime = currentTime;
-          const playerPos = playerBody.translation();
-          const shipAngle = playerBody.rotation();
-          const gunOffset = playerRadius + 10;
-          const bulletStartX = playerPos.x + Math.cos(shipAngle) * gunOffset;
-          const bulletStartY = playerPos.y + Math.sin(shipAngle) * gunOffset;
-          const bulletBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(bulletStartX, bulletStartY);
-          const bulletBody = physicsWorld.createRigidBody(bulletBodyDesc);
-          const bulletColliderDesc = RAPIER.ColliderDesc.ball(bulletRadius);
-          physicsWorld.createCollider(bulletColliderDesc, bulletBody);
-          bulletBody.setLinvel({
-            x: Math.cos(shipAngle) * bulletSpeed,
-            y: Math.sin(shipAngle) * bulletSpeed
-          }, true);
-          bulletBody.userData = { type: "bullet" };
-          const soundClone = shotSound.cloneNode();
-          soundClone.volume = 0.02;
-          soundClone.play();
-          bullets.push({ body: bulletBody, birthTime: currentTime });
-        }
-
-        if (lastMouseX || lastMouseY) {
-          const scale = getCameraScale();
-          const origin = getCameraOrigin(playerBody.translation(), scale);
-          const worldMouseX = (lastMouseX - origin.x) / scale;
-          const worldMouseY = (lastMouseY - origin.y) / scale;
-          const targetAngle = Math.atan2(worldMouseY - playerBody.translation().y, worldMouseX - playerBody.translation().x);
-          const currentAngle = playerBody.rotation();
-          let angleDiff = Math.atan2(Math.sin(targetAngle - currentAngle), Math.cos(targetAngle - currentAngle));
-          const angularPushFactor = 10;
-          const angularVelocity = angleDiff * angularPushFactor;
-          playerBody.setAngvel(angularVelocity, true);
-        }
-
-        renderScene({
-          ctx,
-          canvas,
-          worldWidth,
-          worldHeight,
-          walls,
-          playerBody,
-          isDashing,
-          playerRadius,
-          enemies: enemies.filter(e => e.userData.type === "enemy"),
-          enemyRadius,
-          squids: enemies.filter(e => e.userData.type === "squid"),
-          triangleEnemies: enemies.filter(e => e.userData.type === "triangle"),
-          bullets,
-          bulletRadius,
-          getCameraScale,
-          getCameraOrigin,
-          updateBubbleExplosions,
-          updateDamageExplosions,
-          time
-        });
-
-        document.getElementById("healthDiv").innerText = "Health: " + playerHealth + "% | Score: " + score;
-        requestAnimationFrame(gameLoop);
       }
+
+      // Shooting: Adjust player's rotation to face the mouse cursor.
+      if (lastMouseX || lastMouseY) {
+        const scale = getCameraScale();
+        const origin = getCameraOrigin(playerBody.translation(), scale);
+        const worldMouseX = (lastMouseX - origin.x) / scale;
+        const worldMouseY = (lastMouseY - origin.y) / scale;
+        const targetAngle = Math.atan2(worldMouseY - playerBody.translation().y, worldMouseX - playerBody.translation().x);
+        const currentAngle = playerBody.rotation();
+        let angleDiff = Math.atan2(Math.sin(targetAngle - currentAngle), Math.cos(targetAngle - currentAngle));
+        const angularPushFactor = 10;
+        const angularVelocity = angleDiff * angularPushFactor;
+        playerBody.setAngvel(angularVelocity, true);
+      }
+
+      renderScene({
+        ctx,
+        canvas,
+        worldWidth,
+        worldHeight,
+        walls,
+        playerBody,
+        isDashing,
+        playerRadius,
+        enemies: enemies.filter(e => e.userData.type === "enemy"),
+        enemyRadius,
+        squids: enemies.filter(e => e.userData.type === "squid"),
+        triangleEnemies: enemies.filter(e => e.userData.type === "triangle"),
+        bullets,
+        bulletRadius,
+        getCameraScale,
+        getCameraOrigin,
+        updateBubbleExplosions,
+        updateDamageExplosions,
+        time
+      });
+
+      document.getElementById("healthDiv").innerText = "Health: " + playerHealth + "% | Score: " + score;
       requestAnimationFrame(gameLoop);
-    </script>
-  </body>
+    }
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+
 </html>

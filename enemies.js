@@ -167,7 +167,7 @@ export function spawnBasicEnemy({ physicsWorld, playerBody, worldWidth, worldHei
  */
 export function spawnGenericEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies }) {
   if (type === "normal") {
-    spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+    spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius:20, enemies });
   } else if (type === "squid") {
     spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
   } else if (type === "triangle") {
@@ -195,7 +195,7 @@ export function updateRegularEnemy(enemy) {
     enemy.oscillationPhase += 0.5;
     const oscillation = Math.sin(enemy.oscillationPhase) * 0.2;
     const newAngle = currentAngle + oscillation;
-    speed = 100;
+    speed = 200;
     enemy.setLinvel({ x: Math.cos(newAngle) * speed, y: Math.sin(newAngle) * speed }, true);
   }
 }
