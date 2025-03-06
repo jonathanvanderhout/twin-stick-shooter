@@ -122,6 +122,7 @@
     import { spawnGenericEnemy, updateAllEnemies } from "./enemies.js";
     import { startDamageExplosion, updateDamageExplosions } from './damageEffect.js';
     import { renderScene } from "./renderScene.js";
+    import { updateAI } from "./ai.js";
 
     // Import Rapier2D (compat version) from Skypack.
     const shotSound = new Audio("shot.wav"); // Ensure this file exists
@@ -173,8 +174,12 @@
     const fireInterval = 1000 / fireRate; // in milliseconds
     let lastShotTime = 0;
     let isShooting = false;
+    // Global game variables (only for state tracking)
+    let aiEnabled = false;
+    let aiLeadFactor = 1.0;
+    // These variables remain in the main file but will be managed via setter callbacks.
     let dashTriggered = false;
-
+    let isDashing = false;
     // Declare accumulator for bullet timing
     let bulletAccumulator = 0;
 
@@ -369,7 +374,6 @@
 
     // --- Revised Movement Logic for the Player ---
     const movementLerp = 0.2;
-    let isDashing = false;
 
     function updatePlayerMovement(dt) {
       if (dashTriggered) {
@@ -507,30 +511,70 @@
     });
 
     // --- Function to create a bullet ---
-    function createBullet(timestamp) {
+    function createBullet(timestamp, bulletCount = 1, offsetAngleDegrees = 5, randomnessDegrees = 0) {
+      // Calculate bullet angle offsets.
+      let offsets = [];
+      if (bulletCount === 1) {
+        offsets.push(0);
+      } else {
+        const offsetAngleRad = offsetAngleDegrees * Math.PI / 180;
+        const halfCount = (bulletCount - 1) / 2;
+        for (let i = 0; i < bulletCount; i++) {
+          let offset = (i - halfCount) * offsetAngleRad;
+          offsets.push(offset);
+        }
+      }
+
       const playerPos = playerBody.translation();
       const shipAngle = playerBody.rotation();
       const gunOffset = playerRadius + 10;
-      const bulletStartX = playerPos.x + Math.cos(shipAngle) * gunOffset;
-      const bulletStartY = playerPos.y + Math.sin(shipAngle) * gunOffset;
-      const bulletBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(bulletStartX, bulletStartY);
-      const bulletBody = physicsWorld.createRigidBody(bulletBodyDesc);
-      const bulletColliderDesc = RAPIER.ColliderDesc.ball(bulletRadius);
-      physicsWorld.createCollider(bulletColliderDesc, bulletBody);
-      bulletBody.setLinvel({
-        x: Math.cos(shipAngle) * bulletSpeed,
-        y: Math.sin(shipAngle) * bulletSpeed
-      }, true);
-      bulletBody.userData = { type: "bullet" };
+
+      offsets.forEach((angleOffset) => {
+        // Add randomness if randomnessDegrees is not 0.
+        let randomOffset = 0;
+        if (randomnessDegrees !== 0) {
+          randomOffset = (Math.random() * 2 - 1) * (randomnessDegrees * Math.PI / 180);
+        }
+        // Calculate the final angle with the base shipAngle, offset, and randomness.
+        const angle = shipAngle + angleOffset + randomOffset;
+        const bulletStartX = playerPos.x + Math.cos(angle) * gunOffset;
+        const bulletStartY = playerPos.y + Math.sin(angle) * gunOffset;
+        const bulletBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(bulletStartX, bulletStartY);
+        const bulletBody = physicsWorld.createRigidBody(bulletBodyDesc);
+        const bulletColliderDesc = RAPIER.ColliderDesc.ball(bulletRadius);
+        physicsWorld.createCollider(bulletColliderDesc, bulletBody);
+
+        bulletBody.setLinvel({
+          x: Math.cos(angle) * bulletSpeed,
+          y: Math.sin(angle) * bulletSpeed
+        }, true);
+
+        bulletBody.userData = { type: "bullet" };
+        bullets.push({ body: bulletBody, birthTime: timestamp });
+      });
+
+      // Play the shooting sound once for the entire shot.
       const soundClone = shotSound.cloneNode();
       soundClone.volume = 0.02;
       soundClone.play();
-      bullets.push({ body: bulletBody, birthTime: timestamp });
     }
+
 
     // --- Game Loop ---
     let lastTime = performance.now();
     let time = 0;
+
+
+    // Enable AI control by setting this flag to true.
+    // Global constant for targeting. In a more advanced version, you could update this value based on shot success.
+    // Flag to enable AI control.
+
+
+
+
+
+
+
     function gameLoop(currentTime) {
       // Calculate time delta in milliseconds and seconds.
       const deltaMs = currentTime - lastTime;
@@ -541,19 +585,39 @@
         requestAnimationFrame(gameLoop);
         return;
       }
-      
+
       time += 16;
       lastPlayerPos = playerBody.translation();
       lastScale = getCameraScale();
 
-      updatePlayerMovement(dt);
+      if (aiEnabled) {
+        updateAI({
+        dt,
+        playerBody,
+        enemies,
+        bulletSpeed,
+        aiLeadFactor,
+        maxPlayerSpeed,
+        getCameraScale,
+        getCameraOrigin,
+        lastMouseX,
+        lastMouseY,
+        isDashing,
+        dashTriggered,
+        setDashTriggered: (val) => { dashTriggered = val; },
+        setIsDashing: (val) => { isDashing = val; },
+        setIsShooting: (val) => { isShooting = val; }
+      });
+      } else {
+        updatePlayerMovement(dt);
+      }
 
       // Use the bullet accumulator to generate the correct number of bullets.
       if (isShooting) {
         bulletAccumulator += deltaMs;
         while (bulletAccumulator >= fireInterval) {
           bulletAccumulator -= fireInterval;
-          createBullet(currentTime);
+          createBullet(currentTime, 1, 1, 0);
         }
       } else {
         bulletAccumulator = 0;
@@ -565,7 +629,7 @@
           handleCollision(handle1, handle2);
         }
       });
-      
+
       updateAllEnemies(enemies, playerBody, currentTime, dt);
 
       // Remove bullets that have exceeded their lifetime or left the bounds.

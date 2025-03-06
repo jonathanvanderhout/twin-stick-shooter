@@ -120,6 +120,95 @@ export function spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, world
 }
 
 /**
+ * Creates an enemy of the given type at a random location away from the player.
+ * Type-specific properties are applied using a mapping of functions.
+ * @param {Object} params
+ * @param {string} params.type - "enemy", "squid", "triangle", or "boring"
+ * @param {RAPIER.World} params.physicsWorld
+ * @param {RAPIER.RigidBody} params.playerBody
+ * @param {number} params.worldWidth
+ * @param {number} params.worldHeight
+ * @param {number} params.enemyRadius - Used as the enemy's size.
+ * @returns {RAPIER.RigidBody|null} The newly created enemy body, or null if type is unknown.
+ */
+function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius }) {
+  // Choose a random spawn location at least 500 units away from the player.
+  let x, y;
+  const playerPos = playerBody.translation();
+  do {
+    x = Math.random() * (worldWidth - 100) + 50;
+    y = Math.random() * (worldHeight - 100) + 50;
+  } while (Math.hypot(x - playerPos.x, y - playerPos.y) < 500);
+
+  // Create the enemy body and collider.
+  const bodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(x, y);
+  const body = physicsWorld.createRigidBody(bodyDesc);
+  const colliderDesc = RAPIER.ColliderDesc.ball(enemyRadius);
+  const collider = physicsWorld.createCollider(colliderDesc, body);
+  collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
+
+  // Mapping of type-specific configuration functions.
+  const typeConfig = {
+    normal: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "enemy" };
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 100;
+      body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+      body.oscillationPhase = Math.random() * Math.PI * 2;
+    },
+    squid: (body) => {
+      body.userData = { type: "squid" };
+      body.setLinearDamping(2);
+      body.isSquid = true;
+      body.nextMoveTime = 0;
+      body.targetAngle = body.rotation();
+    },
+    triangle: (body) => {
+      body.userData = { type: "triangle" };
+      const pos = body.translation();
+      const playerPos2 = playerBody.translation();
+      const dx = playerPos2.x - pos.x;
+      const dy = playerPos2.y - pos.y;
+      const angle = Math.atan2(dy, dx);
+      const speed = 0; // Adjust as needed.
+      body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+      body.setRotation(angle, true);
+    },
+    boring: (body, collider) => {
+      collider.setRestitution(0);
+      body.userData = { type: "boring" };
+      body.setLinvel({ x: 0, y: 0 }, true);
+    }
+  };
+
+  // Execute the type-specific configuration if available.
+  if (typeConfig[type]) {
+    typeConfig[type](body, collider);
+  } else {
+    console.error("Unknown enemy type:", type);
+    return null;
+  }
+  return body;
+}
+
+/**
+ * Spawns a generic enemy by type and pushes it into the unified enemy array.
+ * @param {Object} params
+ * @param {string} params.type - "enemy", "squid", "triangle", or "boring"
+ * @param {RAPIER.World} params.physicsWorld
+ * @param {RAPIER.RigidBody} params.playerBody
+ * @param {number} params.worldWidth
+ * @param {number} params.worldHeight
+ * @param {number} params.enemyRadius - Used as the enemy's size.
+ * @param {Array} params.enemies - Unified enemy array.
+ */
+export function spawnGenericEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies }) {
+  const enemy = createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius });
+  if (enemy) enemies.push(enemy);
+}
+
+/**
  * Spawns a basic enemy (type "boring") at a random location away from the player.
  * This enemy remains stationary.
  * @param {Object} params
@@ -165,19 +254,19 @@ export function spawnBasicEnemy({ physicsWorld, playerBody, worldWidth, worldHei
  * @param {number} params.enemyRadius
  * @param {Array} params.enemies - Unified enemy array.
  */
-export function spawnGenericEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies }) {
-  if (type === "normal") {
-    spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius:20, enemies });
-  } else if (type === "squid") {
-    spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
-  } else if (type === "triangle") {
-    spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
-  } else if (type === "boring") {
-    spawnBasicEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
-  } else {
-    console.error("Unknown enemy type:", type);
-  }
-}
+// export function spawnGenericEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies }) {
+//   if (type === "normal") {
+//     spawnEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius:20, enemies });
+//   } else if (type === "squid") {
+//     spawnSquid({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+//   } else if (type === "triangle") {
+//     spawnTriangleEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+//   } else if (type === "boring") {
+//     spawnBasicEnemy({ physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies });
+//   } else {
+//     console.error("Unknown enemy type:", type);
+//   }
+// }
 
 /* --- New Per-Enemy Update Functions --- */
 
