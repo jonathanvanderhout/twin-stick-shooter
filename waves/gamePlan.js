@@ -10,7 +10,7 @@ const gamePlan = {
     "10": {
         "enemies": [
             {
-                "type": "normal",
+                "type": "enemy_bullet",
                 "count": 10,
                 "placement": "random",
                 "delay": 0

@@ -10,17 +10,15 @@
  * @param {Object} params.playerBody - The player's physics body (with translation() and rotation() methods).
  * @param {boolean} params.isDashing - Whether the player is currently dashing.
  * @param {number} params.playerRadius - The radius of the player.
- * @param {Array} params.enemies - Array of enemy physics bodies.
+ * @param {Array} params.enemies - Unified array of enemy physics bodies (each with a userData.type property).
  * @param {number} params.enemyRadius - The radius used for enemies.
- * @param {Array} params.squids - Array of squid enemy bodies.
- * @param {Array} params.triangleEnemies - Array of triangle enemy bodies.
- * @param {Array} params.bullets - Array of bullet objects (each with a 'body' property that has translation() and linvel() methods).
- * @param {number} params.bulletRadius 
+ * @param {Array} params.bullets - Array of player bullet objects (each with a 'body' property that has translation() and linvel() methods).
+ * @param {number} params.bulletRadius - The radius of bullets.
  * @param {function} params.getCameraScale - A function that returns the camera scale.
  * @param {function} params.getCameraOrigin - A function that accepts (playerPos, scale) and returns an {x, y} object.
  * @param {function} params.updateBubbleExplosions - A function to draw bubble explosions.
  * @param {function} params.updateDamageExplosions - A function to draw damage explosions.
- * @param {number} params.time - a number needed for rendering the background
+ * @param {number} params.time - A number needed for rendering the background.
  */
 export function renderScene({
     ctx,
@@ -33,8 +31,6 @@ export function renderScene({
     playerRadius,
     enemies,
     enemyRadius,
-    squids,
-    triangleEnemies,
     bullets,
     bulletRadius,
     getCameraScale,
@@ -139,168 +135,160 @@ export function renderScene({
     }
     drawPlayer();
 
-    // --- Draw Regular Enemies ---
-    ctx.fillStyle = "#FF4858";
+    // --- Draw Unified Enemies ---
     enemies.forEach(enemy => {
+        const type = enemy.userData.type;
         const pos = enemy.translation();
-        const vel = enemy.linvel();
-        const enemyAngle = Math.atan2(vel.y, vel.x);
-        ctx.save();
-        ctx.translate(pos.x, pos.y);
-        ctx.rotate(enemyAngle);
-        const primaryColor = "#FF4858";
-        const secondaryColor = "#CC3C4A";
-        ctx.fillStyle = primaryColor;
-        ctx.beginPath();
-        const hexRadius = enemyRadius * 1.2;
-        ctx.moveTo(hexRadius, 0);
-        for (let i = 1; i <= 6; i++) {
-            const a = (Math.PI / 3) * i;
-            ctx.lineTo(hexRadius * Math.cos(a), hexRadius * Math.sin(a));
-        }
-        ctx.fill();
-        ctx.fillStyle = secondaryColor;
-        ctx.beginPath();
-        ctx.moveTo(-hexRadius, 0);
-        ctx.lineTo(-hexRadius * 1.6, -hexRadius * 0.5);
-        ctx.lineTo(-hexRadius * 2, 0);
-        ctx.lineTo(-hexRadius * 1.6, hexRadius * 0.5);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = secondaryColor;
-        ctx.beginPath();
-        ctx.moveTo(-hexRadius * 0.5, -hexRadius * 0.8);
-        ctx.lineTo(0, -hexRadius * 1.4);
-        ctx.lineTo(hexRadius * 0.5, -hexRadius * 0.8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(-hexRadius * 0.5, hexRadius * 0.8);
-        ctx.lineTo(0, hexRadius * 1.4);
-        ctx.lineTo(hexRadius * 0.5, hexRadius * 0.8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(0, -hexRadius * 0.6);
-        ctx.lineTo(hexRadius * 0.4, 0);
-        ctx.lineTo(0, hexRadius * 0.6);
-        ctx.closePath();
-        ctx.fill();
-        ctx.fillStyle = "#FFFFFF";
-        ctx.beginPath();
-        ctx.arc(hexRadius * 0.6, -hexRadius * 0.3, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(hexRadius * 0.6, hexRadius * 0.3, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = "#000000";
-        ctx.beginPath();
-        ctx.arc(hexRadius * 0.6, -hexRadius * 0.3, 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(hexRadius * 0.6, hexRadius * 0.3, 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = secondaryColor;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(hexRadius * 0.3, -hexRadius * 0.5);
-        ctx.lineTo(hexRadius * 0.3, hexRadius * 0.5);
-        ctx.stroke();
-        ctx.restore();
-    });
-
-    // --- Draw Squid Enemies ---
-    squids.forEach(squid => {
-        const pos = squid.translation();
-        const angle = squid.rotation();
-        ctx.save();
-        ctx.translate(pos.x, pos.y);
-        ctx.rotate(angle);
-        
-        // Main body - keep as a circle for symmetry
-        ctx.fillStyle = "#8A2BE2"; // Purple body
-        ctx.beginPath();
-        ctx.arc(0, 0, enemyRadius, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Tentacles - arranged symmetrically around the body
-        const tentacleCount = 8; // Even number for symmetry
-        const tentacleLength = enemyRadius * 0.6;
-        const tentacleWidth = enemyRadius * 0.25;
-        
-        for (let i = 0; i < tentacleCount; i++) {
-            const tentacleAngle = (i * Math.PI * 2 / tentacleCount);
-            const startX = Math.cos(tentacleAngle) * enemyRadius;
-            const startY = Math.sin(tentacleAngle) * enemyRadius;
-            const endX = Math.cos(tentacleAngle) * (enemyRadius + tentacleLength);
-            const endY = Math.sin(tentacleAngle) * (enemyRadius + tentacleLength);
-            
-            // Draw straight geometric tentacles
-            ctx.fillStyle = "#7B24C4"; // Slightly darker purple
+        if (type === "enemy") {
+            // Regular enemy (hexagon shape)
+            const vel = enemy.linvel();
+            const enemyAngle = Math.atan2(vel.y, vel.x);
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            ctx.rotate(enemyAngle);
+            const primaryColor = "#FF4858";
+            const secondaryColor = "#CC3C4A";
+            ctx.fillStyle = primaryColor;
             ctx.beginPath();
-            ctx.moveTo(startX, startY);
-            ctx.lineTo(endX, endY);
-            ctx.lineWidth = tentacleWidth;
-            ctx.lineCap = "round";
+            const hexRadius = enemyRadius * 1.2;
+            ctx.moveTo(hexRadius, 0);
+            for (let i = 1; i <= 6; i++) {
+                const a = (Math.PI / 3) * i;
+                ctx.lineTo(hexRadius * Math.cos(a), hexRadius * Math.sin(a));
+            }
+            ctx.fill();
+            ctx.fillStyle = secondaryColor;
+            ctx.beginPath();
+            ctx.moveTo(-hexRadius, 0);
+            ctx.lineTo(-hexRadius * 1.6, -hexRadius * 0.5);
+            ctx.lineTo(-hexRadius * 2, 0);
+            ctx.lineTo(-hexRadius * 1.6, hexRadius * 0.5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = secondaryColor;
+            ctx.beginPath();
+            ctx.moveTo(-hexRadius * 0.5, -hexRadius * 0.8);
+            ctx.lineTo(0, -hexRadius * 1.4);
+            ctx.lineTo(hexRadius * 0.5, -hexRadius * 0.8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(-hexRadius * 0.5, hexRadius * 0.8);
+            ctx.lineTo(0, hexRadius * 1.4);
+            ctx.lineTo(hexRadius * 0.5, hexRadius * 0.8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(0, -hexRadius * 0.6);
+            ctx.lineTo(hexRadius * 0.4, 0);
+            ctx.lineTo(0, hexRadius * 0.6);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = "#FFFFFF";
+            ctx.beginPath();
+            ctx.arc(hexRadius * 0.6, -hexRadius * 0.3, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(hexRadius * 0.6, hexRadius * 0.3, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.arc(hexRadius * 0.6, -hexRadius * 0.3, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(hexRadius * 0.6, hexRadius * 0.3, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = secondaryColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(hexRadius * 0.3, -hexRadius * 0.5);
+            ctx.lineTo(hexRadius * 0.3, hexRadius * 0.5);
+            ctx.stroke();
+            ctx.restore();
+        } else if (type === "squid") {
+            // Squid enemy
+            const angle = enemy.rotation();
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            ctx.rotate(angle);
+            ctx.fillStyle = "#8A2BE2";
+            ctx.beginPath();
+            ctx.arc(0, 0, enemyRadius, 0, Math.PI * 2);
+            ctx.fill();
+            const tentacleCount = 8;
+            const tentacleLength = enemyRadius * 0.6;
+            const tentacleWidth = enemyRadius * 0.25;
+            for (let i = 0; i < tentacleCount; i++) {
+                const tentacleAngle = (i * Math.PI * 2 / tentacleCount);
+                const startX = Math.cos(tentacleAngle) * enemyRadius;
+                const startY = Math.sin(tentacleAngle) * enemyRadius;
+                const endX = Math.cos(tentacleAngle) * (enemyRadius + tentacleLength);
+                const endY = Math.sin(tentacleAngle) * (enemyRadius + tentacleLength);
+                ctx.fillStyle = "#7B24C4";
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.lineWidth = tentacleWidth;
+                ctx.lineCap = "round";
+                ctx.stroke();
+            }
+            ctx.fillStyle = "#FFFFFF";
+            ctx.beginPath();
+            const eyeDistance = enemyRadius * 0.5;
+            ctx.arc(eyeDistance, 0, enemyRadius * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.arc(eyeDistance, 0, enemyRadius * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = "#6A1B9A";
+            ctx.lineWidth = enemyRadius * 0.1;
+            ctx.beginPath();
+            ctx.arc(0, 0, enemyRadius * 0.95, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        } else if (type === "triangle") {
+            // Triangle enemy (drawn as a torpedo)
+            const angle = enemy.rotation();
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+            ctx.rotate(angle);
+            const torpedoLength = enemyRadius * 2;
+            const torpedoWidth = enemyRadius * 0.7;
+            ctx.beginPath();
+            ctx.moveTo(torpedoLength, 0);
+            ctx.quadraticCurveTo(torpedoLength * 0.5, -torpedoWidth, -torpedoLength * 0.5, -torpedoWidth);
+            ctx.lineTo(-torpedoLength * 0.5, torpedoWidth);
+            ctx.quadraticCurveTo(torpedoLength * 0.5, torpedoWidth, torpedoLength, 0);
+            ctx.closePath();
+            ctx.fillStyle = "black";
+            ctx.fill();
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2 / scale;
+            ctx.stroke();
+            ctx.restore();
+        } else if (type === "enemy_bullet") {
+            // Bullet enemy drawn like the player's bullet
+            const vel = enemy.linvel();
+            const bulletAngle = Math.atan2(vel.y, vel.x);
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, bulletRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "#5CDBFF";
+            ctx.fill();
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(92, 219, 255, 0.6)";
+            ctx.lineWidth = bulletRadius / scale;
+            const trailLength = 10;
+            ctx.moveTo(pos.x, pos.y);
+            ctx.lineTo(
+                pos.x - Math.cos(bulletAngle) * trailLength,
+                pos.y - Math.sin(bulletAngle) * trailLength
+            );
             ctx.stroke();
         }
-        
-        // Eye - pointing in direction of movement (forward direction is at angle 0)
-        ctx.fillStyle = "#FFFFFF";
-        ctx.beginPath();
-        const eyeDistance = enemyRadius * 0.5; // Position eye halfway to edge
-        ctx.arc(eyeDistance, 0, enemyRadius * 0.3, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Pupil
-        ctx.fillStyle = "#000000";
-        ctx.beginPath();
-        ctx.arc(eyeDistance, 0, enemyRadius * 0.15, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Optional: add a ring around the body for more definition
-        ctx.strokeStyle = "#6A1B9A";
-        ctx.lineWidth = enemyRadius * 0.1;
-        ctx.beginPath();
-        ctx.arc(0, 0, enemyRadius * 0.95, 0, Math.PI * 2);
-        ctx.stroke();
-        
-        ctx.restore();
     });
 
-    // --- Draw Triangle Enemies ---
-    triangleEnemies.forEach(tri => {
-        const pos = tri.translation();
-        const angle = tri.rotation();
-        ctx.save();
-        ctx.translate(pos.x, pos.y);
-        ctx.rotate(angle);
-        
-        // Define torpedo dimensions based on enemyRadius.
-        const torpedoLength = enemyRadius * 2;   // Total length of the torpedo.
-        const torpedoWidth = enemyRadius * 0.7;    // Half-width for the curves.
-        
-        ctx.beginPath();
-        // Start at the nose (front) of the torpedo.
-        ctx.moveTo(torpedoLength, 0);
-        // Draw a smooth top curve from the nose to the tail.
-        ctx.quadraticCurveTo(torpedoLength * 0.5, -torpedoWidth, -torpedoLength * 0.5, -torpedoWidth);
-        // Draw the straight tail section.
-        ctx.lineTo(-torpedoLength * 0.5, torpedoWidth);
-        // Draw a smooth bottom curve back to the nose.
-        ctx.quadraticCurveTo(torpedoLength * 0.5, torpedoWidth, torpedoLength, 0);
-        ctx.closePath();
-        
-        ctx.fillStyle = "black";
-        ctx.fill();
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2 / scale;
-        ctx.stroke();
-        ctx.restore();
-      });
-      
-
-    // --- Draw Bullets ---
+    // --- Draw Player Bullets ---
     ctx.fillStyle = "#5CDBFF";
     bullets.forEach(bullet => {
         const pos = bullet.body.translation();
@@ -329,57 +317,33 @@ export function renderScene({
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
-
 function drawOceanBackground(ctx, canvas, time) {
-    // Canvas dimensions
     const width = canvas.width / window.devicePixelRatio;
     const height = canvas.height / window.devicePixelRatio;
     
-    // Create gradient for deep ocean background
     const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
-    bgGradient.addColorStop(0, '#000B14');  // Very dark blue at top
-    bgGradient.addColorStop(1, '#001A2C');  // Slightly lighter at bottom
+    bgGradient.addColorStop(0, '#000B14');
+    bgGradient.addColorStop(1, '#001A2C');
     
-    // Fill the background
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, width, height);
     
-    // Create light rays effect
     drawLightRays(ctx, width, height, time);
-    
-    // Draw sandy ocean floor with ripples
-    // drawOceanFloor(ctx, width, height, time);
 }
 
 function drawLightRays(ctx, width, height, time) {
-    // Light ray properties
     const rayCount = 5;
     const baseSpeed = 0.0002;
     
-    // Draw each light ray
     for (let i = 0; i < rayCount; i++) {
-        // Calculate ray position and size
         const rayWidth = width * 0.2 + Math.sin(time * 0.001 + i) * width * 0.05;
-        
-        // Make rays move across the screen
         const xPosition = ((time * baseSpeed * (0.5 + i * 0.1)) % 1.5 - 0.25) * width;
-        
-        // Create gradient for light ray
-        const rayGradient = ctx.createLinearGradient(
-            xPosition, 0,
-            xPosition + rayWidth, 0
-        );
-        
-        // Gradient with very subtle blue color
+        const rayGradient = ctx.createLinearGradient(xPosition, 0, xPosition + rayWidth, 0);
         rayGradient.addColorStop(0, 'rgba(0, 40, 80, 0)');
         rayGradient.addColorStop(0.5, 'rgba(30, 100, 150, 0.04)');
         rayGradient.addColorStop(1, 'rgba(0, 40, 80, 0)');
-        
-        // Draw the ray
         ctx.fillStyle = rayGradient;
         ctx.globalCompositeOperation = 'lighter';
-        
-        // Make the ray shape
         ctx.beginPath();
         ctx.moveTo(xPosition, 0);
         ctx.lineTo(xPosition + rayWidth, 0);
@@ -387,8 +351,6 @@ function drawLightRays(ctx, width, height, time) {
         ctx.lineTo(xPosition - rayWidth * 0.2, height);
         ctx.closePath();
         ctx.fill();
-        
-        // Reset composite operation
         ctx.globalCompositeOperation = 'source-over';
     }
 }
