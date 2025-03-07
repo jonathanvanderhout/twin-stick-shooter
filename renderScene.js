@@ -302,10 +302,10 @@ export function renderScene({
             const bulletAngle = Math.atan2(vel.y, vel.x);
             ctx.beginPath();
             ctx.arc(pos.x, pos.y, bulletRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "#5CDBFF";
+            ctx.fillStyle = "rgb(255, 0, 0)";
             ctx.fill();
             ctx.beginPath();
-            ctx.strokeStyle = "rgba(92, 219, 255, 0.6)";
+            ctx.strokeStyle = "rgba(255, 0, 0, 0.51)";
             ctx.lineWidth = bulletRadius / scale;
             const trailLength = 10;
             ctx.moveTo(pos.x, pos.y);

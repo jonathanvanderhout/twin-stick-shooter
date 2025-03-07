@@ -244,7 +244,7 @@
       }
     }, 1000);
 
-    
+
 
     // --- Input Handling ---
     const keys = { w: false, a: false, s: false, d: false };
@@ -408,67 +408,69 @@
     }
 
     function handleCollision(handle1, handle2) {
-  const collider1 = physicsWorld.getCollider(handle1);
-  const collider2 = physicsWorld.getCollider(handle2);
-  if (!collider1 || !collider2) return;
-  const body1 = collider1.parent();
-  const body2 = collider2.parent();
-  if (!body1 || !body2) return;
-  const type1 = body1.userData ? body1.userData.type : null;
-  const type2 = body2.userData ? body2.userData.type : null;
+      const collider1 = physicsWorld.getCollider(handle1);
+      const collider2 = physicsWorld.getCollider(handle2);
+      if (!collider1 || !collider2) return;
+      const body1 = collider1.parent();
+      const body2 = collider2.parent();
+      if (!body1 || !body2) return;
+      const type1 = body1.userData ? body1.userData.type : null;
+      const type2 = body2.userData ? body2.userData.type : null;
 
-  // Define all enemy types in one array.
-  const enemyTypes = ["enemy_bullet", "enemy", "squid", "triangle", "boring", "gunner"];
+      // Define all enemy types in one array.
+      const enemyTypes = ["enemy_bullet", "enemy", "squid", "triangle", "boring", "gunner"];
 
-  // Bullet colliding with an enemy.
-  if (
-    (type1 === "bullet" && enemyTypes.includes(type2)) ||
-    (type2 === "bullet" && enemyTypes.includes(type1))
-  ) {
-    let bullet, target;
-    if (type1 === "bullet") { 
-      bullet = body1; 
-      target = body2; 
-    } else { 
-      bullet = body2; 
-      target = body1; 
-    }
-    const pos = target.translation();
-    startBubbleExplosion(pos.x, pos.y);
-    // Accumulate 1 damage per collision.
-    target.userData.damageAccumulated = (target.userData.damageAccumulated || 0) + 1;
-    if (target.userData.damageAccumulated >= target.userData.health) {
-      target.userData.shouldRemove = true;
-    }
-    bullet.shouldRemove = true;
-    score += 10;
-    return;
-  }
+      // Bullet colliding with an enemy.
+      if (
+        (type1 === "bullet" && enemyTypes.includes(type2)) ||
+        (type2 === "bullet" && enemyTypes.includes(type1))
+      ) {
+        let bullet, target;
+        if (type1 === "bullet") {
+          bullet = body1;
+          target = body2;
+        } else {
+          bullet = body2;
+          target = body1;
+        }
+        const pos = target.translation();
+        // Accumulate 1 damage per collision.
+        target.userData.damageAccumulated = (target.userData.damageAccumulated || 0) + 1;
+        if (target.userData.damageAccumulated >= target.userData.health) {
+          if(target.userData.type != "enemy_bullet")
+          startBubbleExplosion(pos.x, pos.y);
 
-  // Player colliding with an enemy.
-  if (
-    (type1 === "player" && enemyTypes.includes(type2)) ||
-    (type2 === "player" && enemyTypes.includes(type1))
-  ) {
-    const player = type1 === "player" ? body1 : body2;
-    const enemy = player === body1 ? body2 : body1;
-    const pos = enemy.translation();
-    startBubbleExplosion(pos.x, pos.y);
-    if (!isDashing) {
-      playerHealth -= 10;
-      startDamageExplosion(player.translation().x, player.translation().y);
+          target.userData.shouldRemove = true;
+        }
+        // bullet.shouldRemove = true;
+        score += 10;
+        return;
+      }
+
+      // Player colliding with an enemy.
+      if (
+        (type1 === "player" && enemyTypes.includes(type2)) ||
+        (type2 === "player" && enemyTypes.includes(type1))
+      ) {
+        const player = type1 === "player" ? body1 : body2;
+        const enemy = player === body1 ? body2 : body1;
+        const pos = enemy.translation();
+        startBubbleExplosion(pos.x, pos.y);
+        if (!isDashing) {
+          playerHealth -= 10;
+          startDamageExplosion(player.translation().x, player.translation().y);
+        }
+        // Accumulate damage on the enemy.
+        enemy.userData.damageAccumulated = (enemy.userData.damageAccumulated || 0) + 1;
+        if (enemy.userData.damageAccumulated >= enemy.userData.health) {
+          enemy.userData.shouldRemove = true;
+        }
+        if (playerHealth <= 0) {
+          endGame();
+        }
+        return;
+      }
     }
-    // Accumulate damage on the enemy.
-    enemy.userData.damageAccumulated = (enemy.userData.damageAccumulated || 0) + 1;
-    if (enemy.userData.damageAccumulated >= enemy.userData.health) {
-      enemy.userData.shouldRemove = true;
-    }
-    if (playerHealth <= 0) {
-      endGame();
-    }
-    return;
-  }
-}
 
 
 
@@ -588,22 +590,24 @@
 
       if (aiEnabled) {
         updateAI({
-        dt,
-        playerBody,
-        enemies,
-        bulletSpeed,
-        aiLeadFactor,
-        maxPlayerSpeed,
-        getCameraScale,
-        getCameraOrigin,
-        lastMouseX,
-        lastMouseY,
-        isDashing,
-        dashTriggered,
-        setDashTriggered: (val) => { dashTriggered = val; },
-        setIsDashing: (val) => { isDashing = val; },
-        setIsShooting: (val) => { isShooting = val; }
-      });
+          dt,
+          playerBody,
+          enemies,
+          bulletSpeed,
+          aiLeadFactor,
+          maxPlayerSpeed,
+          getCameraScale,
+          getCameraOrigin,
+          lastMouseX,
+          lastMouseY,
+          isDashing,
+          dashTriggered,
+          setDashTriggered: (val) => { dashTriggered = val; },
+          setIsDashing: (val) => { isDashing = val; },
+          setIsShooting: (val) => { isShooting = val; },
+          worldWidth,
+          worldHeight
+        });
       } else {
         updatePlayerMovement(dt);
       }
@@ -632,7 +636,7 @@
       for (let i = bullets.length - 1; i >= 0; i--) {
         const bullet = bullets[i];
         if (
-          bullet.body.shouldRemove || 
+          bullet.body.shouldRemove ||
           currentTime - bullet.birthTime > bulletLifetime ||
           bullet.body.translation().x < 0 ||
           bullet.body.translation().x > worldWidth ||
