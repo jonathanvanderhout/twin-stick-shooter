@@ -72,7 +72,7 @@ export function renderScene({
     });
 
     // --- Draw the Player ---
-    function drawPlayer() {
+    function drawPlayer(playerBody) {
         const pPos = playerBody.translation();
         const angle = playerBody.rotation();
         ctx.save();
@@ -133,13 +133,42 @@ export function renderScene({
         ctx.fill();
         ctx.restore();
     }
-    drawPlayer();
+    drawPlayer(playerBody);
 
     // --- Draw Unified Enemies ---
     enemies.forEach(enemy => {
         const type = enemy.userData.type;
         const pos = enemy.translation();
-        if (type === "enemy") {
+
+        if(enemy.userData.health > 1){
+            const rawRadius = enemyRadius;
+            const effectiveRadius = Math.max(rawRadius, 10); // Ensure a minimum size for health bars.
+            const health = enemy.userData.health || 1;
+            const damage = enemy.userData.damageAccumulated || 0;
+            const healthPercent = Math.max(0, (health - damage) / health);
+            const barWidth = effectiveRadius * 2;
+            const barHeight = 5;
+            const barX = pos.x - barWidth / 2;
+            const barY = pos.y - effectiveRadius - 10; // 10px above enemy.
+    
+            ctx.save();
+            // Background bar.
+            ctx.fillStyle = "#555";
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            // Health portion in green.
+            ctx.fillStyle = "#0F0";
+            ctx.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+            // Optional border.
+            // ctx.strokeStyle = "#000";
+            // ctx.strokeRect(barX, barY, barWidth, barHeight);
+            ctx.restore();
+        }
+        
+        if (type == "gunner") {
+            drawPlayer(enemy)
+
+        }
+        else if (type === "enemy") {
             // Regular enemy (hexagon shape)
             const vel = enemy.linvel();
             const enemyAngle = Math.atan2(vel.y, vel.x);
@@ -320,21 +349,21 @@ export function renderScene({
 function drawOceanBackground(ctx, canvas, time) {
     const width = canvas.width / window.devicePixelRatio;
     const height = canvas.height / window.devicePixelRatio;
-    
+
     const bgGradient = ctx.createLinearGradient(0, 0, 0, height);
     bgGradient.addColorStop(0, '#000B14');
     bgGradient.addColorStop(1, '#001A2C');
-    
+
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, width, height);
-    
+
     drawLightRays(ctx, width, height, time);
 }
 
 function drawLightRays(ctx, width, height, time) {
     const rayCount = 5;
     const baseSpeed = 0.0002;
-    
+
     for (let i = 0; i < rayCount; i++) {
         const rayWidth = width * 0.2 + Math.sin(time * 0.001 + i) * width * 0.05;
         const xPosition = ((time * baseSpeed * (0.5 + i * 0.1)) % 1.5 - 0.25) * width;

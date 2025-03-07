@@ -7,17 +7,17 @@
 // the count to spawn, a placement strategy (e.g., "random", "left_edge", "right_edge"),
 // and an optional delay (in milliseconds) to stagger the spawns within that wave.
 const gamePlan = {
-    "10": {
+    "2": {
         "enemies": [
             {
-                "type": "enemy_bullet",
+                "type": "gunner",
                 "count": 10,
                 "placement": "random",
-                "delay": 0
+                "delay": 1000
             },
             {
                 "type": "squid",
-                "count": 7,
+                "count": 1,
                 "placement": "random",
                 "delay": 0
             }
@@ -26,7 +26,7 @@ const gamePlan = {
     "20": {
         "enemies": [
             {
-                "type": "normal",
+                "type": "gunner",
                 "count": 12,
                 "placement": "random",
                 "delay": 100
@@ -39,7 +39,7 @@ const gamePlan = {
             }
         ]
     },
-    "30": {
+    "44": {
         "enemies": [
             {
                 "type": "triangle",

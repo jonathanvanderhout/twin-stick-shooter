@@ -244,29 +244,7 @@
       }
     }, 1000);
 
-    // Spawn initial enemies.
-    for (let i = 0; i < 50; i++) {
-      spawnGenericEnemy({
-        type: "normal",
-        physicsWorld,
-        playerBody,
-        worldWidth,
-        worldHeight,
-        enemyRadius,
-        enemies
-      });
-    }
-    for (let i = 0; i < 10; i++) {
-      spawnGenericEnemy({
-        type: "squid",
-        physicsWorld,
-        playerBody,
-        worldWidth,
-        worldHeight,
-        enemyRadius,
-        enemies
-      });
-    }
+    
 
     // --- Input Handling ---
     const keys = { w: false, a: false, s: false, d: false };
@@ -430,53 +408,69 @@
     }
 
     function handleCollision(handle1, handle2) {
-      const collider1 = physicsWorld.getCollider(handle1);
-      const collider2 = physicsWorld.getCollider(handle2);
-      if (!collider1 || !collider2) return;
-      const body1 = collider1.parent();
-      const body2 = collider2.parent();
-      if (!body1 || !body2) return;
-      const type1 = body1.userData ? body1.userData.type : null;
-      const type2 = body2.userData ? body2.userData.type : null;
+  const collider1 = physicsWorld.getCollider(handle1);
+  const collider2 = physicsWorld.getCollider(handle2);
+  if (!collider1 || !collider2) return;
+  const body1 = collider1.parent();
+  const body2 = collider2.parent();
+  if (!body1 || !body2) return;
+  const type1 = body1.userData ? body1.userData.type : null;
+  const type2 = body2.userData ? body2.userData.type : null;
 
-      // Bullet colliding with enemy (normal, squid, or triangle).
-      if (
-        (type1 === "bullet" && (type2 === "enemy_bullet" || type2 === "enemy" || type2 === "squid" || type2 === "triangle" || type2 === "boring")) ||
-        (type2 === "bullet" && (type1 === "enemy_bullet" || type1 === "enemy" || type1 === "squid" || type1 === "triangle" || type1 === "boring"))
-      ) {
-        let bullet, target;
-        if (type1 === "bullet") { bullet = body1; target = body2; }
-        else { bullet = body2; target = body1; }
-        const pos = target.translation();
-        startBubbleExplosion(pos.x, pos.y);
-        // physicsWorld.removeRigidBody(target);
-        target.userData.shouldRemove = true
-        bullet.shouldRemove = true;
-        score += 10;
-        return;
-      }
-      // Player colliding with enemy.
-      if (
-        (type1 === "player" && (type2 === "enemy_bullet" ||type2 === "enemy" || type2 === "squid" || type2 === "triangle" || type2 === "boring")) ||
-        (type2 === "player" && (type1 === "enemy_bullet" ||type1 === "enemy" || type1 === "squid" || type1 === "triangle" || type1 === "boring"))
-      ) {
-        const player = type1 === "player" ? body1 : body2;
-        const enemy = player === body1 ? body2 : body1;
-        const pos = enemy.translation();
-        startBubbleExplosion(pos.x, pos.y);
-        if (!isDashing) {
-          playerHealth -= 10;
-          startDamageExplosion(player.translation().x, player.translation().y);
-        }
-        // physicsWorld.removeRigidBody(enemy);
-        // removeBodyFromArray(enemy);
-        enemy.userData.shouldRemove = true
-        if (playerHealth <= 0) {
-          endGame();
-        }
-        return;
-      }
+  // Define all enemy types in one array.
+  const enemyTypes = ["enemy_bullet", "enemy", "squid", "triangle", "boring", "gunner"];
+
+  // Bullet colliding with an enemy.
+  if (
+    (type1 === "bullet" && enemyTypes.includes(type2)) ||
+    (type2 === "bullet" && enemyTypes.includes(type1))
+  ) {
+    let bullet, target;
+    if (type1 === "bullet") { 
+      bullet = body1; 
+      target = body2; 
+    } else { 
+      bullet = body2; 
+      target = body1; 
     }
+    const pos = target.translation();
+    startBubbleExplosion(pos.x, pos.y);
+    // Accumulate 1 damage per collision.
+    target.userData.damageAccumulated = (target.userData.damageAccumulated || 0) + 1;
+    if (target.userData.damageAccumulated >= target.userData.health) {
+      target.userData.shouldRemove = true;
+    }
+    bullet.shouldRemove = true;
+    score += 10;
+    return;
+  }
+
+  // Player colliding with an enemy.
+  if (
+    (type1 === "player" && enemyTypes.includes(type2)) ||
+    (type2 === "player" && enemyTypes.includes(type1))
+  ) {
+    const player = type1 === "player" ? body1 : body2;
+    const enemy = player === body1 ? body2 : body1;
+    const pos = enemy.translation();
+    startBubbleExplosion(pos.x, pos.y);
+    if (!isDashing) {
+      playerHealth -= 10;
+      startDamageExplosion(player.translation().x, player.translation().y);
+    }
+    // Accumulate damage on the enemy.
+    enemy.userData.damageAccumulated = (enemy.userData.damageAccumulated || 0) + 1;
+    if (enemy.userData.damageAccumulated >= enemy.userData.health) {
+      enemy.userData.shouldRemove = true;
+    }
+    if (playerHealth <= 0) {
+      endGame();
+    }
+    return;
+  }
+}
+
+
 
     // --- Modal and Game Start/Restart Logic ---
     let gameStarted = false;
@@ -583,6 +577,7 @@
       lastTime = currentTime;
 
       if (!gameStarted) {
+        gameStartTime = performance.now()
         requestAnimationFrame(gameLoop);
         return;
       }
