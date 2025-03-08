@@ -11,9 +11,9 @@ const gamePlan = {
         "enemies": [
             {
                 "type": "gunner",
-                "count": 10,
+                "count": 3,
                 "placement": "random",
-                "delay": 1000
+                "delay": 0
             },
             {
                 "type": "squid",

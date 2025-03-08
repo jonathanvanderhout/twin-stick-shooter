@@ -166,6 +166,7 @@
     const maxPlayerSpeed = 400;
     const bulletSpeed = 1000;
     const bulletLifetime = 1000;
+    let dashesLeft = 10
     let playerHealth = 100;
     let score = 0;
 
@@ -180,6 +181,8 @@
     // These variables remain in the main file but will be managed via setter callbacks.
     let dashTriggered = false;
     let isDashing = false;
+    const dashDuration = 1000; // Dash lasts for 1000ms (adjust as needed)
+    let lastDashTime = -Infinity;
     // Declare accumulator for bullet timing
     let bulletAccumulator = 0;
 
@@ -261,9 +264,7 @@
       if (e.key === "s") keys.s = true;
       if (e.key === "d") keys.d = true;
       if (e.code === "Space") {
-        if (!isDashing) {
-          dashTriggered = true;
-        }
+        dashTriggered = true;
         e.preventDefault();
       }
       if (e.key === "c") {
@@ -293,9 +294,7 @@
       if (e.button === 0) {
         isShooting = true;
       } else if (e.button === 2) {
-        if (!isDashing) {
-          dashTriggered = true;
-        }
+        dashTriggered = true;
         e.preventDefault();
       }
     });
@@ -318,7 +317,7 @@
       const viewHeight = canvas.height / scale;
       let camX = playerPos.x - viewWidth / 2;
       let camY = playerPos.y - viewHeight / 2;
-      const margin = 0;
+      const margin = 10;
       camX = Math.max(-margin, Math.min(camX, worldWidth - viewWidth + margin));
       camY = Math.max(-margin, Math.min(camY, worldHeight - viewHeight + margin));
       return {
@@ -354,9 +353,14 @@
     const movementLerp = 0.2;
 
     function updatePlayerMovement(dt) {
-      if (dashTriggered) {
+      const now = performance.now();
+
+      // If a dash is triggered, update dash time and set dash velocity.
+      if (dashTriggered && dashesLeft > 0) {
+        lastDashTime = now;
+        dashesLeft-=1;
+        // Optionally set a flag for visual effects:
         isDashing = true;
-        setTimeout(() => { isDashing = false; }, 1000);
         const playerPos = playerBody.translation();
         const scale = getCameraScale();
         const origin = getCameraOrigin(playerPos, scale);
@@ -372,8 +376,17 @@
           playerBody.setLinvel({ x: normX * dashSpeed, y: normY * dashSpeed }, true);
         }
         dashTriggered = false;
-        return;
+        return
       }
+
+      // While within the dash period, do not update movement with WASD.
+      if (now - lastDashTime < dashDuration) {
+        // return;
+      } else {
+        isDashing = false;
+      }
+
+      // Normal movement update via WASD (only applied outside the dash period).
       const currentVel = playerBody.linvel();
       let targetVel = { x: 0, y: 0 };
       if (keys.w || keys.a || keys.s || keys.d) {
@@ -396,6 +409,7 @@
       };
       playerBody.setLinvel(newVel, true);
     }
+
 
     // --- Collision Handling ---
     function removeBodyFromArray(bodyToRemove) {
@@ -437,8 +451,8 @@
         // Accumulate 1 damage per collision.
         target.userData.damageAccumulated = (target.userData.damageAccumulated || 0) + 1;
         if (target.userData.damageAccumulated >= target.userData.health) {
-          if(target.userData.type != "enemy_bullet")
-          startBubbleExplosion(pos.x, pos.y);
+          if (target.userData.type != "enemy_bullet")
+            startBubbleExplosion(pos.x, pos.y);
 
           target.userData.shouldRemove = true;
         }
