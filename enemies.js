@@ -13,7 +13,8 @@ function normalizeAngle(angle) {
  * from the player is chosen. For enemy_bullets (and similar future cases), an optional angle can be provided.
  *
  * @param {Object} params
- * @param {string} params.type - "enemy", "squid", "triangle", "boring", "gunner", or "enemy_bullet"
+ * @param {string} params.type - "enemy", "squid", "triangle", "boring", "gunner", "enemy_bullet",
+ *                                "health", "dash", "multiBullet", "bulletSpeed", "fireRate", "bulletUpgrade", "powerGlow", or "special"
  * @param {RAPIER.World} params.physicsWorld
  * @param {RAPIER.RigidBody} params.playerBody
  * @param {number} params.worldWidth
@@ -50,7 +51,7 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
     normal: (body, collider) => {
       collider.setRestitution(0.8);
       // Default enemy health is 1.
-      body.userData = { type: "enemy", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      body.userData = { type: "normal", radius: enemyRadius, health: 1, damageAccumulated: 0 };
       const angle = Math.random() * Math.PI * 2;
       const speed = 100;
       body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
@@ -98,6 +99,64 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
       body.setRotation(angle, true);
       // Gunner starts stationary; movement and bullet firing will be handled in its update.
       body.setLinvel({ x: 0, y: 0 }, true);
+    },
+    // New asset types.
+    health: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "health", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      // Similar movement as a normal enemy.
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 100;
+      body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+      body.oscillationPhase = Math.random() * Math.PI * 2;
+    },
+    dash: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "dash", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      // Slightly faster movement.
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 150;
+      body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+    },
+    multiBullet: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "multiBullet", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 120;
+      body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+    },
+    bulletSpeed: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "bulletSpeed", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 180;
+      body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+    },
+    fireRate: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "fireRate", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      // Remain stationary.
+      body.setLinvel({ x: 0, y: 0 }, true);
+    },
+    bulletUpgrade: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "bulletUpgrade", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 100;
+      body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+    },
+    powerGlow: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "powerGlow", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 80;
+      body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
+    },
+    special: (body, collider) => {
+      collider.setRestitution(0.8);
+      body.userData = { type: "special", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      // Remain stationary.
+      body.setLinvel({ x: 0, y: 0 }, true);
     }
   };
 
@@ -114,7 +173,7 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
 /**
  * Spawns a generic enemy by type and pushes it into the unified enemy array.
  * @param {Object} params
- * @param {string} params.type - "enemy", "squid", "triangle", "boring", "gunner", or "enemy_bullet"
+ * @param {string} params.type - See createEnemy for accepted types.
  * @param {RAPIER.World} params.physicsWorld
  * @param {RAPIER.RigidBody} params.playerBody
  * @param {number} params.worldWidth
@@ -127,18 +186,19 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
  */
 export function spawnGenericEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, enemies, angle, x, y }) {
   const enemy = createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, enemyRadius, angle, x, y });
-  enemies.push(enemy);
+  if (enemy) {
+    enemies.push(enemy);
+  }
 }
 
 // (The rest of the update functions remain unchanged.)
-
 
 /**
  * Updates a regular enemy (type "enemy").
  * @param {RAPIER.RigidBody} enemy
  */
 export function updateRegularEnemy(enemy) {
-  if (enemy.userData.type !== "enemy") return;
+  if (enemy.userData.type !== "normal") return;
   const vel = enemy.linvel();
   let speed = Math.hypot(vel.x, vel.y);
   if (speed > 0) {
@@ -283,7 +343,6 @@ export function updateGunnerEnemy(gunner, playerBody, currentTime, dt, physicsWo
   }
 }
 
-
 /**
  * Updates all enemies.
  * @param {Array} enemies - Unified enemy array.
@@ -316,7 +375,7 @@ export function updateAllEnemies(enemies, playerBody, currentTime, dt, physicsWo
   // Update remaining enemies by type.
   enemies.forEach(enemy => {
     const type = enemy.userData.type;
-    if (type === "enemy") {
+    if (type === "normal") {
       updateRegularEnemy(enemy);
     } else if (type === "squid") {
       updateSquid(enemy, playerBody, currentTime, dt);
@@ -327,6 +386,7 @@ export function updateAllEnemies(enemies, playerBody, currentTime, dt, physicsWo
     } else if (type === "gunner") {
       updateGunnerEnemy(enemy, playerBody, currentTime, dt, physicsWorld, enemies, worldWidth, worldHeight);
     }
-    // enemy_bullet needs no extra update.
+    // Note: New asset types currently have no dedicated update function.
+    // You can add custom behavior for them later if desired.
   });
 }

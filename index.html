@@ -189,6 +189,7 @@
     // Create Rapier2D physics world (no gravity).
     const gravity = { x: 0, y: 0 };
     const physicsWorld = new RAPIER.World(gravity);
+    
     const eventQueue = new RAPIER.EventQueue(true);
 
     // --- Unified enemy and bullet arrays ---
@@ -358,7 +359,7 @@
       // If a dash is triggered, update dash time and set dash velocity.
       if (dashTriggered && dashesLeft > 0) {
         lastDashTime = now;
-        dashesLeft-=1;
+        dashesLeft -= 1;
         // Optionally set a flag for visual effects:
         isDashing = true;
         const playerPos = playerBody.translation();
@@ -412,14 +413,6 @@
 
 
     // --- Collision Handling ---
-    function removeBodyFromArray(bodyToRemove) {
-      [enemies].forEach(arr => {
-        const index = arr.findIndex(b => b && b.handle === bodyToRemove.handle);
-        if (index !== -1) {
-          arr.splice(index, 1);
-        }
-      });
-    }
 
     function handleCollision(handle1, handle2) {
       const collider1 = physicsWorld.getCollider(handle1);
@@ -431,8 +424,9 @@
       const type1 = body1.userData ? body1.userData.type : null;
       const type2 = body2.userData ? body2.userData.type : null;
 
-      // Define all enemy types in one array.
-      const enemyTypes = ["enemy_bullet", "enemy", "squid", "triangle", "boring", "gunner"];
+      // Define all enemy types and power-up types.
+      const enemyTypes = ["enemy_bullet", "normal", "squid", "triangle", "boring", "gunner"];
+      const powerUpTypes = ["health", "dash", "multiBullet", "bulletSpeed", "fireRate", "bulletUpgrade", "powerGlow", "special"];
 
       // Bullet colliding with an enemy.
       if (
@@ -453,10 +447,10 @@
         if (target.userData.damageAccumulated >= target.userData.health) {
           if (target.userData.type != "enemy_bullet")
             startBubbleExplosion(pos.x, pos.y);
-
           target.userData.shouldRemove = true;
         }
-        // bullet.shouldRemove = true;
+        bullet.shouldRemove = true;
+        bullet.userData.shouldRemove = true;
         score += 10;
         return;
       }
@@ -484,7 +478,28 @@
         }
         return;
       }
+
+      // Player colliding with a power-up.
+      if (
+        (type1 === "player" && powerUpTypes.includes(type2)) ||
+        (type2 === "player" && powerUpTypes.includes(type1))
+      ) {
+        const player = type1 === "player" ? body1 : body2;
+        const powerUp = player === body1 ? body2 : body1;
+        const powerType = powerUp.userData.type;
+        if (powerType === "health") {
+          // Increase player's health by 10.
+          playerHealth += 10;
+        } else {
+          // Handle other power-ups (you can add more behavior here).
+          console.log(`Picked up power-up: ${powerType}`);
+        }
+        // Remove the power-up.
+        powerUp.userData.shouldRemove = true;
+        return;
+      }
     }
+
 
 
 
@@ -522,7 +537,7 @@
     });
 
     // --- Function to create a bullet ---
-    function createBullet(timestamp, bulletCount = 1, offsetAngleDegrees = 5, randomnessDegrees = 0) {
+    function createBullet(timestamp, bulletCount = 1, offsetAngleDegrees = 0, randomnessDegrees = 0) {
       // Calculate bullet angle offsets.
       let offsets = [];
       if (bulletCount === 1) {
@@ -631,7 +646,7 @@
         bulletAccumulator += deltaMs;
         while (bulletAccumulator >= fireInterval) {
           bulletAccumulator -= fireInterval;
-          createBullet(currentTime, 1, 1, 0);
+          createBullet(currentTime, 1, 0, 0);
         }
       } else {
         bulletAccumulator = 0;
