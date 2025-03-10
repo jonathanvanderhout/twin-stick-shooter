@@ -100,7 +100,7 @@
 
 <body>
   <div id="gameTitle">Gārsecg (Alpha Version)</div>
-  <div id="healthDiv">Health: 100% | Score: 0</div>
+  <div id="healthDiv">Health: 100% | Score: 0 | Dashes: 10</div>
   <canvas id="gameCanvas"></canvas>
   <!-- Modal Popup -->
   <div id="modal">
@@ -166,7 +166,7 @@
     const maxPlayerSpeed = 400;
     const bulletSpeed = 1000;
     const bulletLifetime = 1000;
-    let dashesLeft = 10
+    let dashesLeft = 10;
     let playerHealth = 100;
     let score = 0;
 
@@ -247,8 +247,6 @@
         }
       }
     }, 1000);
-
-
 
     // --- Input Handling ---
     const keys = { w: false, a: false, s: false, d: false };
@@ -377,7 +375,7 @@
           playerBody.setLinvel({ x: normX * dashSpeed, y: normY * dashSpeed }, true);
         }
         dashTriggered = false;
-        return
+        return;
       }
 
       // While within the dash period, do not update movement with WASD.
@@ -411,9 +409,7 @@
       playerBody.setLinvel(newVel, true);
     }
 
-
     // --- Collision Handling ---
-
     function handleCollision(handle1, handle2) {
       const collider1 = physicsWorld.getCollider(handle1);
       const collider2 = physicsWorld.getCollider(handle2);
@@ -490,7 +486,11 @@
         if (powerType === "health") {
           // Increase player's health by 10.
           playerHealth += 10;
-        } else {
+        } else if (powerType == "dash") {
+          // Handle other power-ups (you can add more behavior here).
+          dashesLeft += 10;
+        }
+        else {
           // Handle other power-ups (you can add more behavior here).
           console.log(`Picked up power-up: ${powerType}`);
         }
@@ -499,9 +499,6 @@
         return;
       }
     }
-
-
-
 
     // --- Modal and Game Start/Restart Logic ---
     let gameStarted = false;
@@ -514,9 +511,16 @@
     });
     function endGame() {
       gameStarted = false;
+      // Track high score in local storage.
+      let highScore = parseInt(localStorage.getItem("highScore") || "0", 10);
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem("highScore", highScore);
+      }
       modalContent.innerHTML = `
           <h1>Game Over</h1>
           <p>Your Score: ${score}</p>
+          <p>High Score: ${highScore}</p>
           <button id="playAgain">Play Again</button>
         `;
       document.getElementById("playAgain").addEventListener("click", () => {
@@ -585,21 +589,9 @@
       soundClone.play();
     }
 
-
     // --- Game Loop ---
     let lastTime = performance.now();
     let time = 0;
-
-
-    // Enable AI control by setting this flag to true.
-    // Global constant for targeting. In a more advanced version, you could update this value based on shot success.
-    // Flag to enable AI control.
-
-
-
-
-
-
 
     function gameLoop(currentTime) {
       // Calculate time delta in milliseconds and seconds.
@@ -608,7 +600,7 @@
       lastTime = currentTime;
 
       if (!gameStarted) {
-        gameStartTime = performance.now()
+        gameStartTime = performance.now();
         requestAnimationFrame(gameLoop);
         return;
       }
@@ -703,8 +695,6 @@
         playerRadius,
         enemies: enemies,
         enemyRadius,
-        // squids: enemies.filter(e => e.userData.type === "squid"),
-        // triangleEnemies: enemies.filter(e => e.userData.type === "triangle"),
         bullets,
         bulletRadius,
         getCameraScale,
@@ -714,7 +704,8 @@
         time
       });
 
-      document.getElementById("healthDiv").innerText = "Health: " + playerHealth + "% | Score: " + score;
+      // Update HUD to show Health, Score, and Dashes remaining.
+      document.getElementById("healthDiv").innerText = "Health: " + playerHealth + "% | Score: " + score + " | Dashes: " + dashesLeft;
       requestAnimationFrame(gameLoop);
     }
     requestAnimationFrame(gameLoop);

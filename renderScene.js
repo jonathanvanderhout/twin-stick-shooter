@@ -72,13 +72,20 @@ export function renderScene({
     });
 
     // --- Draw the Player ---
-    function drawPlayer(playerBody) {
+    function drawPlayer(playerBody, type = "player") {
+        if (type == "gunner") {
+            ctx.fillStyle = "red";
+        }
+        else {
+            ctx.fillStyle = "#FFCB05";
+
+        }
         const pPos = playerBody.translation();
         const angle = playerBody.rotation();
         ctx.save();
         ctx.translate(pPos.x, pPos.y);
         ctx.rotate(angle);
-        if (isDashing) {
+        if (isDashing && type == "player") {
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = "#5CDBFF";
             ctx.beginPath();
@@ -86,7 +93,6 @@ export function renderScene({
             ctx.fill();
             ctx.globalAlpha = 1;
         }
-        ctx.fillStyle = "#FFCB05";
         ctx.beginPath();
         ctx.arc(0, 0, playerRadius, 0, Math.PI * 2);
         ctx.fill();
@@ -181,15 +187,15 @@ export function renderScene({
         ctx.fillStyle = "#5CDBFF"; // bright blue
         const width = 40, height = 8, radius = 4;
         ctx.beginPath();
-        ctx.moveTo(-width/2 + radius, -height/2);
-        ctx.lineTo(width/2 - radius, -height/2);
-        ctx.quadraticCurveTo(width/2, -height/2, width/2, -height/2 + radius);
-        ctx.lineTo(width/2, height/2 - radius);
-        ctx.quadraticCurveTo(width/2, height/2, width/2 - radius, height/2);
-        ctx.lineTo(-width/2 + radius, height/2);
-        ctx.quadraticCurveTo(-width/2, height/2, -width/2, height/2 - radius);
-        ctx.lineTo(-width/2, -height/2 + radius);
-        ctx.quadraticCurveTo(-width/2, -height/2, -width/2 + radius, -height/2);
+        ctx.moveTo(-width / 2 + radius, -height / 2);
+        ctx.lineTo(width / 2 - radius, -height / 2);
+        ctx.quadraticCurveTo(width / 2, -height / 2, width / 2, -height / 2 + radius);
+        ctx.lineTo(width / 2, height / 2 - radius);
+        ctx.quadraticCurveTo(width / 2, height / 2, width / 2 - radius, height / 2);
+        ctx.lineTo(-width / 2 + radius, height / 2);
+        ctx.quadraticCurveTo(-width / 2, height / 2, -width / 2, height / 2 - radius);
+        ctx.lineTo(-width / 2, -height / 2 + radius);
+        ctx.quadraticCurveTo(-width / 2, -height / 2, -width / 2 + radius, -height / 2);
         ctx.closePath();
         ctx.fill();
         ctx.restore();
@@ -202,15 +208,15 @@ export function renderScene({
         ctx.fillStyle = "#FFCB05"; // bright yellow
         function drawCapsule(cx, cy, w, h, r) {
             ctx.beginPath();
-            ctx.moveTo(cx - w/2 + r, cy - h/2);
-            ctx.lineTo(cx + w/2 - r, cy - h/2);
-            ctx.quadraticCurveTo(cx + w/2, cy - h/2, cx + w/2, cy - h/2 + r);
-            ctx.lineTo(cx + w/2, cy + h/2 - r);
-            ctx.quadraticCurveTo(cx + w/2, cy + h/2, cx + w/2 - r, cy + h/2);
-            ctx.lineTo(cx - w/2 + r, cy + h/2);
-            ctx.quadraticCurveTo(cx - w/2, cy + h/2, cx - w/2, cy + h/2 - r);
-            ctx.lineTo(cx - w/2, cy - h/2 + r);
-            ctx.quadraticCurveTo(cx - w/2, cy - h/2, cx - w/2 + r, cy - h/2);
+            ctx.moveTo(cx - w / 2 + r, cy - h / 2);
+            ctx.lineTo(cx + w / 2 - r, cy - h / 2);
+            ctx.quadraticCurveTo(cx + w / 2, cy - h / 2, cx + w / 2, cy - h / 2 + r);
+            ctx.lineTo(cx + w / 2, cy + h / 2 - r);
+            ctx.quadraticCurveTo(cx + w / 2, cy + h / 2, cx + w / 2 - r, cy + h / 2);
+            ctx.lineTo(cx - w / 2 + r, cy + h / 2);
+            ctx.quadraticCurveTo(cx - w / 2, cy + h / 2, cx - w / 2, cy + h / 2 - r);
+            ctx.lineTo(cx - w / 2, cy - h / 2 + r);
+            ctx.quadraticCurveTo(cx - w / 2, cy - h / 2, cx - w / 2 + r, cy - h / 2);
             ctx.closePath();
             ctx.fill();
         }
@@ -227,21 +233,21 @@ export function renderScene({
         ctx.fillStyle = "#0099CC"; // deep blue
         const shaftWidth = 30, shaftHeight = 6, radius = 3;
         ctx.beginPath();
-        ctx.moveTo(-shaftWidth/2 + radius, -shaftHeight/2);
-        ctx.lineTo(shaftWidth/2 - radius, -shaftHeight/2);
-        ctx.quadraticCurveTo(shaftWidth/2, -shaftHeight/2, shaftWidth/2, -shaftHeight/2 + radius);
-        ctx.lineTo(shaftWidth/2, shaftHeight/2 - radius);
-        ctx.quadraticCurveTo(shaftWidth/2, shaftHeight/2, shaftWidth/2 - radius, shaftHeight/2);
-        ctx.lineTo(-shaftWidth/2 + radius, shaftHeight/2);
-        ctx.quadraticCurveTo(-shaftWidth/2, shaftHeight/2, -shaftWidth/2, shaftHeight/2 - radius);
-        ctx.lineTo(-shaftWidth/2, -shaftHeight/2 + radius);
-        ctx.quadraticCurveTo(-shaftWidth/2, -shaftHeight/2, -shaftWidth/2 + radius, -shaftHeight/2);
+        ctx.moveTo(-shaftWidth / 2 + radius, -shaftHeight / 2);
+        ctx.lineTo(shaftWidth / 2 - radius, -shaftHeight / 2);
+        ctx.quadraticCurveTo(shaftWidth / 2, -shaftHeight / 2, shaftWidth / 2, -shaftHeight / 2 + radius);
+        ctx.lineTo(shaftWidth / 2, shaftHeight / 2 - radius);
+        ctx.quadraticCurveTo(shaftWidth / 2, shaftHeight / 2, shaftWidth / 2 - radius, shaftHeight / 2);
+        ctx.lineTo(-shaftWidth / 2 + radius, shaftHeight / 2);
+        ctx.quadraticCurveTo(-shaftWidth / 2, shaftHeight / 2, -shaftWidth / 2, shaftHeight / 2 - radius);
+        ctx.lineTo(-shaftWidth / 2, -shaftHeight / 2 + radius);
+        ctx.quadraticCurveTo(-shaftWidth / 2, -shaftHeight / 2, -shaftWidth / 2 + radius, -shaftHeight / 2);
         ctx.closePath();
         ctx.fill();
         ctx.beginPath();
-        ctx.moveTo(shaftWidth/2, 0);
-        ctx.lineTo(shaftWidth/2 + 10, -8);
-        ctx.lineTo(shaftWidth/2 + 10, 8);
+        ctx.moveTo(shaftWidth / 2, 0);
+        ctx.lineTo(shaftWidth / 2 + 10, -8);
+        ctx.lineTo(shaftWidth / 2 + 10, 8);
         ctx.closePath();
         ctx.fill();
         ctx.restore();
@@ -353,7 +359,7 @@ export function renderScene({
             const barHeight = 5;
             const barX = pos.x - barWidth / 2;
             const barY = pos.y - effectiveRadius - 10;
-    
+
             ctx.save();
             ctx.fillStyle = "#555";
             ctx.fillRect(barX, barY, barWidth, barHeight);
@@ -365,7 +371,7 @@ export function renderScene({
         switch (type) {
             case "gunner":
                 // Draw gunner like the player.
-                drawPlayer(enemy);
+                drawPlayer(enemy, type);
                 break;
             case "normal":
                 // Regular enemy (hexagon shape)
