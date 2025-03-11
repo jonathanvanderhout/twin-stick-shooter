@@ -76,6 +76,10 @@ export function renderScene({
         if (type == "gunner") {
             ctx.fillStyle = "red";
         }
+        else if (type == "mimic") {
+            ctx.fillStyle = "#blue";
+
+        }
         else {
             ctx.fillStyle = "#FFCB05";
 
@@ -370,6 +374,10 @@ export function renderScene({
 
         switch (type) {
             case "gunner":
+                // Draw gunner like the player.
+                drawPlayer(enemy, type);
+                break;
+            case "mimic":
                 // Draw gunner like the player.
                 drawPlayer(enemy, type);
                 break;

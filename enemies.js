@@ -13,8 +13,9 @@ function normalizeAngle(angle) {
  * from the player is chosen. For enemy_bullets (and similar future cases), an optional angle can be provided.
  *
  * @param {Object} params
- * @param {string} params.type - "enemy", "squid", "triangle", "boring", "gunner", "enemy_bullet",
- *                                "health", "dash", "multiBullet", "bulletSpeed", "fireRate", "bulletUpgrade", "powerGlow", or "special"
+ * @param {string} params.type - "normal", "squid", "triangle", "boring", "gunner", "enemy_bullet",
+ *                                "health", "dash", "multiBullet", "bulletSpeed", "fireRate", "bulletUpgrade",
+ *                                "powerGlow", "special", or "mimic"
  * @param {RAPIER.World} params.physicsWorld
  * @param {RAPIER.RigidBody} params.playerBody
  * @param {number} params.worldWidth
@@ -65,7 +66,7 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
       body.targetAngle = body.rotation();
     },
     triangle: (body) => {
-      body.userData = { type: "triangle", radius: enemyRadius, health: 1, damageAccumulated: 0 };
+      body.userData = { type: "triangle", radius: enemyRadius, health: 5, damageAccumulated: 0 };
       const pos = body.translation();
       const playerPos2 = playerBody.translation();
       const dx = playerPos2.x - pos.x;
@@ -104,7 +105,6 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
     health: (body, collider) => {
       collider.setRestitution(0.8);
       body.userData = { type: "health", radius: enemyRadius, health: 1, damageAccumulated: 0 };
-      // Similar movement as a normal enemy.
       const angle = Math.random() * Math.PI * 2;
       const speed = 100;
       body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
@@ -113,7 +113,6 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
     dash: (body, collider) => {
       collider.setRestitution(0.8);
       body.userData = { type: "dash", radius: enemyRadius, health: 1, damageAccumulated: 0 };
-      // Slightly faster movement.
       const angle = Math.random() * Math.PI * 2;
       const speed = 150;
       body.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
@@ -135,7 +134,6 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
     fireRate: (body, collider) => {
       collider.setRestitution(0.8);
       body.userData = { type: "fireRate", radius: enemyRadius, health: 1, damageAccumulated: 0 };
-      // Remain stationary.
       body.setLinvel({ x: 0, y: 0 }, true);
     },
     bulletUpgrade: (body, collider) => {
@@ -155,9 +153,72 @@ function createEnemy({ type, physicsWorld, playerBody, worldWidth, worldHeight, 
     special: (body, collider) => {
       collider.setRestitution(0.8);
       body.userData = { type: "special", radius: enemyRadius, health: 1, damageAccumulated: 0 };
-      // Remain stationary.
       body.setLinvel({ x: 0, y: 0 }, true);
+    },
+    // New mimic enemy type.
+    mimic: (body, collider) => {
+      collider.setRestitution(0.8);
+      
+      // Compute player's position and determine which wall is farthest.
+      const playerPos = playerBody.translation();
+      const offset = 50; // offset from the wall boundaries
+      let spawnX, spawnY, travelAngle;
+      
+      // Distances from the player's position to each boundary.
+      const dLeft = playerPos.x;
+      const dRight = worldWidth - playerPos.x;
+      const dTop = playerPos.y;
+      const dBottom = worldHeight - playerPos.y;
+      
+      // Find the maximum distance.
+      const maxDistance = Math.max(dLeft, dRight, dTop, dBottom);
+      
+      // Choose the spawn side and set a travel direction accordingly.
+      if (maxDistance === dLeft) {
+        // Spawn on the left wall, travel right.
+        spawnX = offset;
+        spawnY = Math.random() * (worldHeight - 2 * offset) + offset;
+        travelAngle = 0; // 0 radians: rightwards.
+      } else if (maxDistance === dRight) {
+        // Spawn on the right wall, travel left.
+        spawnX = worldWidth - offset;
+        spawnY = Math.random() * (worldHeight - 2 * offset) + offset;
+        travelAngle = Math.PI; // π radians: leftwards.
+      } else if (maxDistance === dTop) {
+        // Spawn on the top wall, travel down.
+        spawnY = offset;
+        spawnX = Math.random() * (worldWidth - 2 * offset) + offset;
+        travelAngle = Math.PI / 2; // π/2 radians: downward.
+      } else { // dBottom is maximum.
+        // Spawn on the bottom wall, travel up.
+        spawnY = worldHeight - offset;
+        spawnX = Math.random() * (worldWidth - 2 * offset) + offset;
+        travelAngle = -Math.PI / 2; // -π/2 radians: upward.
+      }
+      
+      // Override the enemy's spawn location.
+      body.setTranslation({ x: spawnX, y: spawnY }, true);
+      
+      // Store the travel direction in userData.
+      body.userData = {
+        type: "mimic",
+        radius: enemyRadius,
+        health: 5,
+        damageAccumulated: 0,
+        travelAngle: travelAngle
+      };
+      
+      // Set the initial velocity so the mimic moves in the chosen direction.
+      const mimicSpeed = 200; // Adjust as needed.
+      body.setLinvel({
+        x: Math.cos(travelAngle) * mimicSpeed,
+        y: Math.sin(travelAngle) * mimicSpeed
+      }, true);
+      
+      // Optionally, add some damping.
+      body.setLinearDamping(1);
     }
+    
   };
 
   // Execute the type-specific configuration if available.
@@ -194,7 +255,7 @@ export function spawnGenericEnemy({ type, physicsWorld, playerBody, worldWidth, 
 // (The rest of the update functions remain unchanged.)
 
 /**
- * Updates a regular enemy (type "enemy").
+ * Updates a regular enemy (type "normal").
  * @param {RAPIER.RigidBody} enemy
  */
 export function updateRegularEnemy(enemy) {
@@ -301,16 +362,11 @@ export function updateGunnerEnemy(gunner, playerBody, currentTime, dt, physicsWo
   const dx = playerPos.x - pos.x;
   const dy = playerPos.y - pos.y;
   const angle = Math.atan2(dy, dx);
-  // Always update the gunner to point toward the player.
   gunner.setRotation(angle, true);
 
-  // Determine behavior based on alternating seconds.
   const second = Math.floor(currentTime / 1000) % 2;
   if (second === 0) {
-    // Paused: stand still.
     gunner.setLinvel({ x: 0, y: 0 }, true);
-
-    // Fire bullets at a rate of 5 per second only when paused.
     if (gunner.bulletTimer === undefined) {
       gunner.bulletTimer = 0;
     }
@@ -320,7 +376,7 @@ export function updateGunnerEnemy(gunner, playerBody, currentTime, dt, physicsWo
     while (gunner.bulletTimer >= bulletInterval) {
       gunner.bulletTimer -= bulletInterval;
       const gunnerRadius = gunner.userData.radius || 20;
-      const bulletOffset = gunnerRadius + 5; 
+      const bulletOffset = gunnerRadius + 5;
       const bulletX = pos.x + Math.cos(angle) * bulletOffset;
       const bulletY = pos.y + Math.sin(angle) * bulletOffset;
       const bullet = createEnemy({
@@ -329,7 +385,7 @@ export function updateGunnerEnemy(gunner, playerBody, currentTime, dt, physicsWo
         playerBody, // required parameter (not used for bullet behavior)
         worldWidth,
         worldHeight,
-        enemyRadius: 5, // bullet size
+        enemyRadius: 5,
         angle: angle,
         x: bulletX,
         y: bulletY
@@ -337,11 +393,142 @@ export function updateGunnerEnemy(gunner, playerBody, currentTime, dt, physicsWo
       enemies.push(bullet);
     }
   } else {
-    // Moving toward the player.
     const speed = 250;
     gunner.setLinvel({ x: Math.cos(angle) * speed, y: Math.sin(angle) * speed }, true);
   }
 }
+
+/**
+ * Updates a mimic enemy (type "mimic").
+ * Mimic behaves like the player character but with a twist:
+ * it fires bullets in the direction the player is moving while moving in the exact opposite direction.
+ *
+ * @param {RAPIER.RigidBody} mimic
+ * @param {RAPIER.RigidBody} playerBody
+ * @param {number} currentTime - Current time in milliseconds.
+ * @param {number} dt - Delta time in seconds.
+ * @param {RAPIER.World} physicsWorld
+ * @param {Array} enemies - Unified enemy array.
+ * @param {number} worldWidth
+ * @param {number} worldHeight
+ */
+// Helper to compare angles within a tolerance.
+
+export function updateMimicEnemy(mimic, playerBody, currentTime, dt, physicsWorld, enemies, worldWidth, worldHeight) {
+  const radius = mimic.userData.radius || 20;
+  const pos = mimic.translation();
+  const vel = mimic.linvel();
+  
+  // Determine direction by checking velocity
+  let isMovingRight = vel.x > 0;
+  let isMovingLeft = vel.x < 0;
+  let isMovingDown = vel.y > 0;
+  let isMovingUp = vel.y < 0;
+  
+  // First spawn behavior - if not moving, give initial direction
+  if (Math.abs(vel.x) < 0.1 && Math.abs(vel.y) < 0.1) {
+    // If this is a new mimic, use its stored travel angle to set direction
+    if (mimic.userData.travelAngle !== undefined) {
+      const angle = mimic.userData.travelAngle;
+      if (approxEqual(angle, 0)) isMovingRight = true;
+      else if (approxEqual(angle, Math.PI)) isMovingLeft = true;
+      else if (approxEqual(angle, Math.PI/2)) isMovingDown = true;
+      else if (approxEqual(angle, -Math.PI/2)) isMovingUp = true;
+    } else {
+      // Default to right if no direction
+      isMovingRight = true;
+    }
+  }
+  
+  // Check wall collisions and reverse direction
+  const buffer = radius + 5;
+  
+  // Handle horizontal movement and collisions
+  if (isMovingRight && pos.x >= worldWidth - buffer) {
+    isMovingRight = false;
+    isMovingLeft = true;
+    // Nudge away from wall
+    mimic.setTranslation({ x: worldWidth - buffer, y: pos.y }, true);
+  } else if (isMovingLeft && pos.x <= buffer) {
+    isMovingLeft = false;
+    isMovingRight = true;
+    // Nudge away from wall
+    mimic.setTranslation({ x: buffer, y: pos.y }, true);
+  }
+  
+  // Handle vertical movement and collisions
+  if (isMovingDown && pos.y >= worldHeight - buffer) {
+    isMovingDown = false;
+    isMovingUp = true;
+    // Nudge away from wall
+    mimic.setTranslation({ x: pos.x, y: worldHeight - buffer }, true);
+  } else if (isMovingUp && pos.y <= buffer) {
+    isMovingUp = false;
+    isMovingDown = true;
+    // Nudge away from wall
+    mimic.setTranslation({ x: pos.x, y: buffer }, true);
+  }
+  
+  // Calculate new angle and velocity based on direction
+  let newAngle;
+  if (isMovingRight) newAngle = 0;
+  else if (isMovingLeft) newAngle = Math.PI;
+  else if (isMovingDown) newAngle = Math.PI/2;
+  else if (isMovingUp) newAngle = -Math.PI/2;
+  
+  // Store the angle for future reference
+  mimic.userData.travelAngle = newAngle;
+  
+  // Set rotation to match direction
+  mimic.setRotation(newAngle, true);
+  
+  // Apply velocity
+  const mimicSpeed = 200;
+  mimic.setLinvel({
+    x: Math.cos(newAngle) * mimicSpeed,
+    y: Math.sin(newAngle) * mimicSpeed
+  }, true);
+  
+  // Fire bullets
+  if (mimic.bulletTimer === undefined) mimic.bulletTimer = 0;
+  mimic.bulletTimer += dt;
+  const bulletInterval = 0.1;
+  
+  while (mimic.bulletTimer >= bulletInterval) {
+    mimic.bulletTimer -= bulletInterval;
+    const bulletOffset = radius + 5;
+    const bulletX = pos.x + Math.cos(newAngle) * bulletOffset;
+    const bulletY = pos.y + Math.sin(newAngle) * bulletOffset;
+    
+    const bullet = createEnemy({
+      type: "enemy_bullet",
+      physicsWorld,
+      playerBody,
+      worldWidth,
+      worldHeight,
+      enemyRadius: 5,
+      angle: newAngle,
+      x: bulletX,
+      y: bulletY
+    });
+    
+    enemies.push(bullet);
+  }
+}
+
+// Helper function for angle comparison
+function approxEqual(a, b, tol = 0.1) {
+  return Math.abs(normalizeAngle(a - b)) < tol;
+}
+
+
+
+
+
+
+
+
+
 
 /**
  * Updates all enemies.
@@ -354,7 +541,7 @@ export function updateGunnerEnemy(gunner, playerBody, currentTime, dt, physicsWo
  * @param {number} worldHeight
  */
 export function updateAllEnemies(enemies, playerBody, currentTime, dt, physicsWorld, worldWidth, worldHeight) {
-  // Process enemy bullets: remove those that have existed longer than 5 seconds.
+  // Process enemy bullets: remove those that have existed longer than 1 second.
   for (let i = enemies.length - 1; i >= 0; i--) {
     const enemy = enemies[i];
     if (enemy.userData.type === "enemy_bullet") {
@@ -385,8 +572,9 @@ export function updateAllEnemies(enemies, playerBody, currentTime, dt, physicsWo
       updateBasicEnemy(enemy);
     } else if (type === "gunner") {
       updateGunnerEnemy(enemy, playerBody, currentTime, dt, physicsWorld, enemies, worldWidth, worldHeight);
+    } else if (type === "mimic") {
+      updateMimicEnemy(enemy, playerBody, currentTime, dt, physicsWorld, enemies, worldWidth, worldHeight);
     }
-    // Note: New asset types currently have no dedicated update function.
-    // You can add custom behavior for them later if desired.
+    // Note: New asset types currently have no dedicated update function unless added.
   });
 }
