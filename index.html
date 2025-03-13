@@ -176,7 +176,7 @@
     let lastShotTime = 0;
     let isShooting = false;
     // Global game variables (only for state tracking)
-    let aiEnabled = false;
+    let aiEnabled = true;
     let aiLeadFactor = 1.0;
     // These variables remain in the main file but will be managed via setter callbacks.
     let dashTriggered = false;
@@ -189,7 +189,7 @@
     // Create Rapier2D physics world (no gravity).
     const gravity = { x: 0, y: 0 };
     const physicsWorld = new RAPIER.World(gravity);
-    
+
     const eventQueue = new RAPIER.EventQueue(true);
 
     // --- Unified enemy and bullet arrays ---
@@ -496,6 +496,42 @@
         }
         // Remove the power-up.
         powerUp.userData.shouldRemove = true;
+        return;
+      }
+      // --- Handle enemy bullet collisions (including walls) ---
+      if (type1 === "enemy_bullet" || type2 === "enemy_bullet") {
+        const now = performance.now();
+        let enemyBulletBody, otherType;
+        if (type1 === "enemy_bullet") {
+          enemyBulletBody = body1;
+          otherType = type2; // could be null if colliding with a wall
+        } else {
+          enemyBulletBody = body2;
+          otherType = type1;
+        }
+        // If colliding with a wall (or any object without a defined type), remove immediately.
+        if (otherType === null || otherType === "wall" ||  enemyTypes.includes(otherType)) {
+          enemyBulletBody.shouldRemove = true;
+          if (enemyBulletBody.userData) enemyBulletBody.userData.shouldRemove = true;
+          return;
+        }
+        // For collisions with dynamic objects, use a grace period.
+        const birthTime = enemyBulletBody.userData.birthTime || now;
+        const gracePeriod = 0; // milliseconds; adjust as needed.
+        if (now - birthTime > gracePeriod) {
+          enemyBulletBody.shouldRemove = true;
+          if (enemyBulletBody.userData) enemyBulletBody.userData.shouldRemove = true;
+          // If the enemy bullet hit the player, apply damage.
+          if (otherType === "player") {
+            if (!isDashing) {
+              playerHealth -= 10;
+              startDamageExplosion(playerBody.translation().x, playerBody.translation().y);
+            }
+            if (playerHealth <= 0) {
+              endGame();
+            }
+          }
+        }
         return;
       }
     }

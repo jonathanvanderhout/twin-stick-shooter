@@ -21,12 +21,12 @@ const gamePlan = {
                 "placement": "random",
                 "delay": 0
             },
-            {
-                "type": "triangle",
-                "count": 20,
-                "placement": "random",
-                "delay": 2000
-            }
+            // {
+            //     "type": "triangle",
+            //     "count": 20,
+            //     "placement": "random",
+            //     "delay": 2000
+            // }
         ]
     },
     // "20": {

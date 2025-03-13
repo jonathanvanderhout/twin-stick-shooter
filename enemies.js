@@ -373,10 +373,10 @@ export function updateGunnerEnemy(gunner, playerBody, currentTime, dt, physicsWo
     gunner.bulletTimer += dt;
     const bulletInterval = 0.2; // 5 bullets per second
 
-    while (gunner.bulletTimer >= bulletInterval) {
-      gunner.bulletTimer -= bulletInterval;
+    if (gunner.bulletTimer >= bulletInterval) {
+      gunner.bulletTimer =0;
       const gunnerRadius = gunner.userData.radius || 20;
-      const bulletOffset = gunnerRadius + 5;
+      const bulletOffset = gunnerRadius + 10;
       const bulletX = pos.x + Math.cos(angle) * bulletOffset;
       const bulletY = pos.y + Math.sin(angle) * bulletOffset;
       const bullet = createEnemy({
@@ -494,9 +494,10 @@ export function updateMimicEnemy(mimic, playerBody, currentTime, dt, physicsWorl
   mimic.bulletTimer += dt;
   const bulletInterval = 0.1;
   
-  while (mimic.bulletTimer >= bulletInterval) {
-    mimic.bulletTimer -= bulletInterval;
-    const bulletOffset = radius + 5;
+  if (mimic.bulletTimer >= bulletInterval) {
+    // mimic.bulletTimer -= bulletInterval;
+    mimic.bulletTimer = 0
+    const bulletOffset = radius + 10;
     const bulletX = pos.x + Math.cos(newAngle) * bulletOffset;
     const bulletY = pos.y + Math.sin(newAngle) * bulletOffset;
     
