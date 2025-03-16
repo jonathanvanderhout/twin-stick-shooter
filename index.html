@@ -715,7 +715,7 @@
         const targetAngle = Math.atan2(worldMouseY - playerBody.translation().y, worldMouseX - playerBody.translation().x);
         const currentAngle = playerBody.rotation();
         let angleDiff = Math.atan2(Math.sin(targetAngle - currentAngle), Math.cos(targetAngle - currentAngle));
-        const angularPushFactor = 10;
+        const angularPushFactor = 20;
         const angularVelocity = angleDiff * angularPushFactor;
         playerBody.setAngvel(angularVelocity, true);
       }
