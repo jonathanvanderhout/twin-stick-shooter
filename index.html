@@ -205,10 +205,2085 @@
       physicsWorld.createCollider(colliderDesc, wallBody);
       walls.push({ x, y, width, height });
     }
-    createWall(worldWidth / 2, -50, worldWidth + 200, 100);
-    createWall(worldWidth / 2, worldHeight + 50, worldWidth + 200, 100);
-    createWall(-50, worldHeight / 2, 100, worldHeight + 200);
-    createWall(worldWidth + 50, worldHeight / 2, 100, worldHeight + 200);
+    function wallsFromObject(wallsObj) {
+      if (wallsObj.walls && Array.isArray(wallsObj.walls)) {
+        wallsObj.walls.forEach(wall => {
+          // Assumes createWall(x, y, width, height) is defined in your game.
+          createWall(wall.x, wall.y, wall.width, wall.height);
+        });
+      } else {
+        console.error("Invalid walls data format.");
+      }
+    };
+    wallsFromObject(
+      {
+  "walls": [
+    {
+      "x": 960,
+      "y": 10,
+      "width": 1880,
+      "height": 20,
+      "roomId": 1
+    },
+    {
+      "x": 960,
+      "y": 1070,
+      "width": 1880,
+      "height": 20,
+      "roomId": 1
+    },
+    {
+      "x": 10,
+      "y": 540,
+      "width": 20,
+      "height": 1040,
+      "roomId": 1
+    },
+    {
+      "x": 1910,
+      "y": 267.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 1
+    },
+    {
+      "x": 1910,
+      "y": 812.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 1
+    },
+    {
+      "x": 2980,
+      "y": 10,
+      "width": 1880,
+      "height": 20,
+      "roomId": 2
+    },
+    {
+      "x": 2497.5,
+      "y": 1070,
+      "width": 915,
+      "height": 20,
+      "roomId": 2
+    },
+    {
+      "x": 3462.5,
+      "y": 1070,
+      "width": 915,
+      "height": 20,
+      "roomId": 2
+    },
+    {
+      "x": 2030,
+      "y": 267.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 2
+    },
+    {
+      "x": 2030,
+      "y": 812.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 2
+    },
+    {
+      "x": 3930,
+      "y": 540,
+      "width": 20,
+      "height": 1040,
+      "roomId": 2
+    },
+    {
+      "x": 2497.5,
+      "y": 1190,
+      "width": 915,
+      "height": 20,
+      "roomId": 3
+    },
+    {
+      "x": 3462.5,
+      "y": 1190,
+      "width": 915,
+      "height": 20,
+      "roomId": 3
+    },
+    {
+      "x": 2980,
+      "y": 2250,
+      "width": 1880,
+      "height": 20,
+      "roomId": 3
+    },
+    {
+      "x": 2030,
+      "y": 1447.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 3
+    },
+    {
+      "x": 2030,
+      "y": 1992.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 3
+    },
+    {
+      "x": 3930,
+      "y": 1720,
+      "width": 20,
+      "height": 1040,
+      "roomId": 3
+    },
+    {
+      "x": 960,
+      "y": 1190,
+      "width": 1880,
+      "height": 20,
+      "roomId": 4
+    },
+    {
+      "x": 960,
+      "y": 2250,
+      "width": 1880,
+      "height": 20,
+      "roomId": 4
+    },
+    {
+      "x": 10,
+      "y": 1447.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 4
+    },
+    {
+      "x": 10,
+      "y": 1992.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 4
+    },
+    {
+      "x": 1910,
+      "y": 1447.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 4
+    },
+    {
+      "x": 1910,
+      "y": 1992.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 4
+    },
+    {
+      "x": -1060,
+      "y": 1190,
+      "width": 1880,
+      "height": 20,
+      "roomId": 5
+    },
+    {
+      "x": -1542.5,
+      "y": 2250,
+      "width": 915,
+      "height": 20,
+      "roomId": 5
+    },
+    {
+      "x": -577.5,
+      "y": 2250,
+      "width": 915,
+      "height": 20,
+      "roomId": 5
+    },
+    {
+      "x": -2010,
+      "y": 1720,
+      "width": 20,
+      "height": 1040,
+      "roomId": 5
+    },
+    {
+      "x": -110,
+      "y": 1447.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 5
+    },
+    {
+      "x": -110,
+      "y": 1992.5,
+      "width": 20,
+      "height": 495,
+      "roomId": 5
+    },
+    {
+      "x": -1542.5,
+      "y": 2370,
+      "width": 915,
+      "height": 20,
+      "roomId": 6
+    },
+    {
+      "x": -577.5,
+      "y": 2370,
+      "width": 915,
+      "height": 20,
+      "roomId": 6
+    },
+    {
+      "x": -1542.5,
+      "y": 3430,
+      "width": 915,
+      "height": 20,
+      "roomId": 6
+    },
+    {
+      "x": -577.5,
+      "y": 3430,
+      "width": 915,
+      "height": 20,
+      "roomId": 6
+    },
+    {
+      "x": -2010,
+      "y": 2900,
+      "width": 20,
+      "height": 1040,
+      "roomId": 6
+    },
+    {
+      "x": -110,
+      "y": 2900,
+      "width": 20,
+      "height": 1040,
+      "roomId": 6
+    },
+    {
+      "x": -1782.5,
+      "y": 3550,
+      "width": 1395,
+      "height": 20,
+      "roomId": 7
+    },
+    {
+      "x": -337.5,
+      "y": 3550,
+      "width": 1395,
+      "height": 20,
+      "roomId": 7
+    },
+    {
+      "x": -1060,
+      "y": 5150,
+      "width": 2840,
+      "height": 20,
+      "roomId": 7
+    },
+    {
+      "x": -2490,
+      "y": 3942.5,
+      "width": 20,
+      "height": 765,
+      "roomId": 7
+    },
+    {
+      "x": -2490,
+      "y": 4757.5,
+      "width": 20,
+      "height": 765,
+      "roomId": 7
+    },
+    {
+      "x": 370,
+      "y": 4350,
+      "width": 20,
+      "height": 1580,
+      "roomId": 7
+    },
+    {
+      "x": -4762.5,
+      "y": 3550,
+      "width": 1395,
+      "height": 20,
+      "roomId": 8
+    },
+    {
+      "x": -3317.5,
+      "y": 3550,
+      "width": 1395,
+      "height": 20,
+      "roomId": 8
+    },
+    {
+      "x": -4040,
+      "y": 5150,
+      "width": 2840,
+      "height": 20,
+      "roomId": 8
+    },
+    {
+      "x": -5470,
+      "y": 4350,
+      "width": 20,
+      "height": 1580,
+      "roomId": 8
+    },
+    {
+      "x": -2610,
+      "y": 3942.5,
+      "width": 20,
+      "height": 765,
+      "roomId": 8
+    },
+    {
+      "x": -2610,
+      "y": 4757.5,
+      "width": 20,
+      "height": 765,
+      "roomId": 8
+    },
+    {
+      "x": -4378.5,
+      "y": 2694,
+      "width": 627,
+      "height": 20,
+      "roomId": 9
+    },
+    {
+      "x": -3701.5,
+      "y": 2694,
+      "width": 627,
+      "height": 20,
+      "roomId": 9
+    },
+    {
+      "x": -4378.5,
+      "y": 3430,
+      "width": 627,
+      "height": 20,
+      "roomId": 9
+    },
+    {
+      "x": -3701.5,
+      "y": 3430,
+      "width": 627,
+      "height": 20,
+      "roomId": 9
+    },
+    {
+      "x": -4702,
+      "y": 3062,
+      "width": 20,
+      "height": 716,
+      "roomId": 9
+    },
+    {
+      "x": -3378,
+      "y": 3062,
+      "width": 20,
+      "height": 716,
+      "roomId": 9
+    },
+    {
+      "x": -4040,
+      "y": 1838,
+      "width": 1304,
+      "height": 20,
+      "roomId": 10
+    },
+    {
+      "x": -4378.5,
+      "y": 2574,
+      "width": 627,
+      "height": 20,
+      "roomId": 10
+    },
+    {
+      "x": -3701.5,
+      "y": 2574,
+      "width": 627,
+      "height": 20,
+      "roomId": 10
+    },
+    {
+      "x": -4702,
+      "y": 2014.5,
+      "width": 20,
+      "height": 333,
+      "roomId": 10
+    },
+    {
+      "x": -4702,
+      "y": 2397.5,
+      "width": 20,
+      "height": 333,
+      "roomId": 10
+    },
+    {
+      "x": -3378,
+      "y": 2206,
+      "width": 20,
+      "height": 716,
+      "roomId": 10
+    },
+    {
+      "x": -5484,
+      "y": 1838,
+      "width": 1304,
+      "height": 20,
+      "roomId": 11
+    },
+    {
+      "x": -5484,
+      "y": 2574,
+      "width": 1304,
+      "height": 20,
+      "roomId": 11
+    },
+    {
+      "x": -6146,
+      "y": 2014.5,
+      "width": 20,
+      "height": 333,
+      "roomId": 11
+    },
+    {
+      "x": -6146,
+      "y": 2397.5,
+      "width": 20,
+      "height": 333,
+      "roomId": 11
+    },
+    {
+      "x": -4822,
+      "y": 2014.5,
+      "width": 20,
+      "height": 333,
+      "roomId": 11
+    },
+    {
+      "x": -4822,
+      "y": 2397.5,
+      "width": 20,
+      "height": 333,
+      "roomId": 11
+    },
+    {
+      "x": -7696,
+      "y": 1406,
+      "width": 2840,
+      "height": 20,
+      "roomId": 12
+    },
+    {
+      "x": -7696,
+      "y": 3006,
+      "width": 2840,
+      "height": 20,
+      "roomId": 12
+    },
+    {
+      "x": -9126,
+      "y": 2206,
+      "width": 20,
+      "height": 1580,
+      "roomId": 12
+    },
+    {
+      "x": -6266,
+      "y": 1798.5,
+      "width": 20,
+      "height": 765,
+      "roomId": 12
+    },
+    {
+      "x": -6266,
+      "y": 2613.5,
+      "width": 20,
+      "height": 765,
+      "roomId": 12
+    },
+    {
+      "x": 1970,
+      "y": 505,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        1,
+        2
+      ]
+    },
+    {
+      "x": 1970,
+      "y": 575,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        1,
+        2
+      ]
+    },
+    {
+      "x": 2945,
+      "y": 1130,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        2,
+        3
+      ]
+    },
+    {
+      "x": 3015,
+      "y": 1130,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        2,
+        3
+      ]
+    },
+    {
+      "x": 1970,
+      "y": 1685,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        3,
+        4
+      ]
+    },
+    {
+      "x": 1970,
+      "y": 1755,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        3,
+        4
+      ]
+    },
+    {
+      "x": -50,
+      "y": 1685,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        4,
+        5
+      ]
+    },
+    {
+      "x": -50,
+      "y": 1755,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        4,
+        5
+      ]
+    },
+    {
+      "x": -1095,
+      "y": 2310,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        5,
+        6
+      ]
+    },
+    {
+      "x": -1025,
+      "y": 2310,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        5,
+        6
+      ]
+    },
+    {
+      "x": -1095,
+      "y": 3490,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        6,
+        7
+      ]
+    },
+    {
+      "x": -1025,
+      "y": 3490,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        6,
+        7
+      ]
+    },
+    {
+      "x": -2550,
+      "y": 4315,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        7,
+        8
+      ]
+    },
+    {
+      "x": -2550,
+      "y": 4385,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        7,
+        8
+      ]
+    },
+    {
+      "x": -4075,
+      "y": 3490,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        8,
+        9
+      ]
+    },
+    {
+      "x": -4005,
+      "y": 3490,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        8,
+        9
+      ]
+    },
+    {
+      "x": -4075,
+      "y": 2634,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        9,
+        10
+      ]
+    },
+    {
+      "x": -4005,
+      "y": 2634,
+      "width": 20,
+      "height": 100,
+      "tunnelRooms": [
+        9,
+        10
+      ]
+    },
+    {
+      "x": -4762,
+      "y": 2171,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        10,
+        11
+      ]
+    },
+    {
+      "x": -4762,
+      "y": 2241,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        10,
+        11
+      ]
+    },
+    {
+      "x": -6206,
+      "y": 2171,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        11,
+        12
+      ]
+    },
+    {
+      "x": -6206,
+      "y": 2241,
+      "width": 100,
+      "height": 20,
+      "tunnelRooms": [
+        11,
+        12
+      ]
+    }
+  ],
+  "waves": [
+    {
+      "number": 1,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Squid",
+          "x": 350.196522104338,
+          "y": 343.98722474780385,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 1
+        },
+        {
+          "type": "Normal",
+          "x": 809.5623124306189,
+          "y": 461.515955341038,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 1
+        },
+        {
+          "type": "Normal",
+          "x": 1401.7369417551652,
+          "y": 716.375922392109,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 1
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Squid",
+          "x": 2605.713278417367,
+          "y": 575.4918771552996,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 2
+        },
+        {
+          "type": "Normal",
+          "x": 3650.5013569116727,
+          "y": 296.6065648962275,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 2
+        },
+        {
+          "type": "Normal",
+          "x": 3448.1125595475874,
+          "y": 761.351210695239,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 2
+        },
+        {
+          "type": "Normal",
+          "x": 3148.2773041933865,
+          "y": 476.5077181087481,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 2
+        },
+        {
+          "type": "Normal",
+          "x": 2728.507946697505,
+          "y": 146.6889372191271,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 2
+        },
+        {
+          "type": "Normal",
+          "x": 2331.2262333531885,
+          "y": 266.62303936080747,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 2
+        },
+        {
+          "type": "Normal",
+          "x": 2331.2262333531885,
+          "y": 911.2688383723395,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 2
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": -1182.6593925653356,
+          "y": 1611.2098451632748,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 5
+        },
+        {
+          "type": "Mimic",
+          "x": -207.0837501021208,
+          "y": 2019.0324497995368,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 5
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": 312.69015776762444,
+          "y": 1771.1402783539659,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 4
+        },
+        {
+          "type": "Mimic",
+          "x": 1432.2031901024604,
+          "y": 1683.1785400990857,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 4
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": 2271.8379643535877,
+          "y": 1691.1750617586204,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 3
+        },
+        {
+          "type": "Mimic",
+          "x": 3079.4866519665766,
+          "y": 1779.1368000135003,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 3
+        },
+        {
+          "type": "Normal",
+          "x": 3418.1290340121664,
+          "y": 1585.8981629192915,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 3
+        },
+        {
+          "type": "Normal",
+          "x": 2728.507946697505,
+          "y": 1533.4269932323064,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 3
+        },
+        {
+          "type": "Normal",
+          "x": 2706.0203025459396,
+          "y": 1765.7993161318122,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 3
+        },
+        {
+          "type": "Normal",
+          "x": 2608.573844555824,
+          "y": 1990.6757576474631,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 3
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": -958.7567860983677,
+          "y": 2802.691572433922,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 6
+        },
+        {
+          "type": "Mimic",
+          "x": -1526.50982392532,
+          "y": 2938.632440646009,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 6
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": -1818.4263437541495,
+          "y": 4175.321152058169,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 7
+        },
+        {
+          "type": "Mimic",
+          "x": -283.09418512351726,
+          "y": 4279.275933632118,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 7
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": -3665.622847106629,
+          "y": 4423.21332350374,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 8
+        },
+        {
+          "type": "Mimic",
+          "x": -5128.98631080145,
+          "y": 4399.223758525137,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 8
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": -4121.424581700097,
+          "y": 3095.7907280210065,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 9
+        },
+        {
+          "type": "Mimic",
+          "x": -3617.6437171494217,
+          "y": 3063.804641382868,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 9
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": -3622.0332912815525,
+          "y": 2221.470720698184,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 10
+        },
+        {
+          "type": "Mimic",
+          "x": -4181.78980744897,
+          "y": 2229.4672423577185,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 10
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Mimic",
+          "x": -5325.29240476241,
+          "y": 2133.5089824433044,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 11
+        },
+        {
+          "type": "Mimic",
+          "x": -5781.09413935588,
+          "y": 2189.484634060046,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 11
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "seconds": 10,
+      "enemies": [
+        {
+          "type": "Normal",
+          "x": -6632.499394346439,
+          "y": 1578.9874516549087,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6708.987862542825,
+          "y": 2086.592740594568,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6674.220376999013,
+          "y": 2441.221093141453,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7640.756475116994,
+          "y": 2719.3609774919505,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8996.688411325673,
+          "y": 2510.7560642290773,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8426.501648407151,
+          "y": 1766.731873591495,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8690.734538540124,
+          "y": 1697.1969025038704,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8732.455521192698,
+          "y": 1697.1969025038704,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8732.455521192698,
+          "y": 2093.54623770333,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8725.502024083937,
+          "y": 2100.499734812093,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8649.01355588755,
+          "y": 2260.430168313629,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8558.618093473639,
+          "y": 2469.0350815765028,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8301.338700449427,
+          "y": 2503.8025671203145,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7856.31488548863,
+          "y": 2260.430168313629,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7626.849480899469,
+          "y": 2044.871757941993,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7724.198440422143,
+          "y": 1843.2203417878818,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7863.268382597392,
+          "y": 1822.3598504615945,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8099.687284295315,
+          "y": 1982.290283963131,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8030.152313207691,
+          "y": 2017.0577695069433,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7453.012053180407,
+          "y": 2295.1976538574413,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7439.105058962882,
+          "y": 2364.732624945066,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7334.802602331446,
+          "y": 2427.3140989239278,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7195.732660156197,
+          "y": 1912.7553128755064,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7376.523584984021,
+          "y": 1572.0339545461463,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7557.314509811845,
+          "y": 1704.150399612633,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6757.662342304162,
+          "y": 2065.7322492682806,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6778.52283363045,
+          "y": 2302.1511509662037,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6952.36026134951,
+          "y": 2510.7560642290773,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7098.3837006335225,
+          "y": 2670.686497730614,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7376.523584984021,
+          "y": 2635.9190121868014,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7974.524336337591,
+          "y": 2573.3375382079394,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8322.199191775713,
+          "y": 2608.1050237517516,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8662.920550105075,
+          "y": 2253.4766712048663,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8697.688035648887,
+          "y": 1975.3367868543685,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7056.6627179809475,
+          "y": 2030.9647637244682,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7056.6627179809475,
+          "y": 2065.7322492682806,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7710.291446204618,
+          "y": 2079.6392434858053,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8176.175752491702,
+          "y": 1641.568925633771,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8231.803729361802,
+          "y": 1641.568925633771,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8350.013180210764,
+          "y": 1836.2668446791197,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8350.013180210764,
+          "y": 2121.36022613838,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7891.082371032442,
+          "y": 2378.639619162591,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7306.988613896396,
+          "y": 2149.17421457343,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7167.918671721147,
+          "y": 2170.034705899717,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6917.592775805699,
+          "y": 2726.3144746007133,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6708.987862542825,
+          "y": 2601.151526642989,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6750.7088451954,
+          "y": 1954.4762955280812,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6924.546272914461,
+          "y": 1704.150399612633,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7411.291070527833,
+          "y": 1801.4993591353073,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8197.03624381799,
+          "y": 2190.8951972260047,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8516.897110821063,
+          "y": 2413.4071047064026,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8906.29294891176,
+          "y": 1912.7553128755064,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8906.29294891176,
+          "y": 1871.0343302229319,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8739.409018301461,
+          "y": 2441.221093141453,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8739.409018301461,
+          "y": 2552.477046881652,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8231.803729361802,
+          "y": 2656.779503513089,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7487.7795387242195,
+          "y": 2482.9420757940275,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7300.035116787633,
+          "y": 2503.8025671203145,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7063.616215089711,
+          "y": 2156.127711682192,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7035.80222665466,
+          "y": 2163.081208790955,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6959.313758458273,
+          "y": 2329.9651394012535,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6896.732284479412,
+          "y": 2580.291035316702,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6841.104307609311,
+          "y": 2670.686497730614,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6743.755348086637,
+          "y": 2684.5934919481388,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6514.289943497477,
+          "y": 2482.9420757940275,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6465.61546373614,
+          "y": 2253.4766712048663,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6479.522457953663,
+          "y": 1961.4297926368438,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6549.057429041289,
+          "y": 1801.4993591353073,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7084.476706415998,
+          "y": 1565.080457437384,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7515.59352715927,
+          "y": 1592.8944458724338,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7988.431330555117,
+          "y": 1857.127336005407,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8350.013180210764,
+          "y": 2156.127711682192,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8350.013180210764,
+          "y": 2156.127711682192,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8586.432081908686,
+          "y": 2329.9651394012535,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8913.246446020523,
+          "y": 2608.1050237517516,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -9031.455896869484,
+          "y": 2204.8021914435294,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8899.339451802998,
+          "y": 1850.1738388966444,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8899.339451802998,
+          "y": 1578.9874516549087,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8245.710723579326,
+          "y": 1648.5224227425333,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7466.919047397932,
+          "y": 1745.8713822652078,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7279.174625461346,
+          "y": 2058.778752159518,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7174.87216882991,
+          "y": 2482.9420757940275,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6875.871793153124,
+          "y": 2538.570052664127,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6743.755348086637,
+          "y": 2608.1050237517516,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6618.592400128913,
+          "y": 2705.4539832744263,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6576.871417476338,
+          "y": 2747.174965927001,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7397.384076310308,
+          "y": 2635.9190121868014,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7758.965925965956,
+          "y": 2434.2675960326906,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7918.8963594674915,
+          "y": 2587.2445324254645,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8113.59427851284,
+          "y": 2642.8725092955638,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8322.199191775713,
+          "y": 2670.686497730614,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8516.897110821063,
+          "y": 2691.546989056901,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8621.199567452499,
+          "y": 2788.8959485795754,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8732.455521192698,
+          "y": 2705.4539832744263,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8941.060434455572,
+          "y": 2309.1046480749665,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8871.525463367949,
+          "y": 1905.8018157667439,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8482.12962527725,
+          "y": 1676.3364111775832,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7786.779914401005,
+          "y": 1780.63886780902,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7578.175001138132,
+          "y": 1787.5923649177823,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7001.034741110848,
+          "y": 1752.82487937397,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7001.034741110848,
+          "y": 1766.731873591495,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6827.197313391786,
+          "y": 1676.3364111775832,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -6778.52283363045,
+          "y": 1558.1269603286214,
+          "delay": 0,
+          "placement": "right_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7515.59352715927,
+          "y": 1530.3129718935718,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7898.035868141204,
+          "y": 1530.3129718935718,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -7939.756850793779,
+          "y": 1544.2199661110965,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8461.269133950964,
+          "y": 1599.847942981196,
+          "delay": 0,
+          "placement": "random",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8683.78104143136,
+          "y": 1738.9178851564452,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8662.920550105075,
+          "y": 2156.127711682192,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        },
+        {
+          "type": "Normal",
+          "x": -8593.38557901745,
+          "y": 2406.4536075976407,
+          "delay": 0,
+          "placement": "left_edge",
+          "count": 1,
+          "roomId": 12
+        }
+      ]
+    }
+  ]
+})
+
+
 
     // --- Create the Player ---
     const playerBodyDesc = RAPIER.RigidBodyDesc.dynamic()
@@ -510,7 +2585,7 @@
           otherType = type1;
         }
         // If colliding with a wall (or any object without a defined type), remove immediately.
-        if (otherType === null || otherType === "wall" ||  enemyTypes.includes(otherType)) {
+        if (otherType === null || otherType === "wall" || enemyTypes.includes(otherType)) {
           enemyBulletBody.shouldRemove = true;
           if (enemyBulletBody.userData) enemyBulletBody.userData.shouldRemove = true;
           return;
@@ -694,11 +2769,12 @@
         const bullet = bullets[i];
         if (
           bullet.body.shouldRemove ||
-          currentTime - bullet.birthTime > bulletLifetime ||
-          bullet.body.translation().x < 0 ||
-          bullet.body.translation().x > worldWidth ||
-          bullet.body.translation().y < 0 ||
-          bullet.body.translation().y > worldHeight
+          currentTime - bullet.birthTime > bulletLifetime
+          // ||
+          // bullet.body.translation().x < 0 ||
+          // bullet.body.translation().x > worldWidth ||
+          // bullet.body.translation().y < 0 ||
+          // bullet.body.translation().y > worldHeight
         ) {
           physicsWorld.removeRigidBody(bullet.body);
           bullets[i] = bullets[bullets.length - 1];

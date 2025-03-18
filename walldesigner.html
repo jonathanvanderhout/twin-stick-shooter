@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Level Designer: Rooms &amp; Enemies</title>
+  <style>
+    :root {
+      --primary: #041E42;
+      --secondary: #5CDBFF;
+      --accent: #FFCB05;
+      --dark: #001f33;
+      --light: #e0f7ff;
+      --danger: #ff4d4d;
+      --success: #4dff88;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--primary);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--secondary);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      color: var(--light);
+      margin-bottom: 10px;
+    }
+    .instructions {
+      text-align: center;
+      margin-bottom: 15px;
+      font-size: 14px;
+      color: var(--light);
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 15px;
+      background: var(--dark);
+      border-radius: 8px 8px 0 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    .toolbar-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .divider {
+      height: 30px;
+      width: 1px;
+      background-color: rgba(92, 219, 255, 0.3);
+      margin: 0 10px;
+    }
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--secondary);
+      color: var(--primary);
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    button.active {
+      background-color: var(--accent);
+      color: var(--dark);
+    }
+    button.danger {
+      background-color: var(--danger);
+      color: white;
+    }
+    button.success {
+      background-color: var(--success);
+      color: var(--dark);
+    }
+    .tool-tip {
+      position: relative;
+    }
+    .tool-tip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 5px 10px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .tool-tip:hover::after {
+      opacity: 1;
+      visibility: visible;
+    }
+    .toolbar-label {
+      font-size: 14px;
+      margin-right: 5px;
+      color: var(--light);
+    }
+    .canvas-container {
+      position: relative;
+      border: 1px solid var(--secondary);
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 15px;
+    }
+    canvas {
+      width: 100%;
+      height: 600px;
+      display: block;
+      background: #000;
+    }
+    .status-bar {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: var(--light);
+    }
+    .zoom-controls {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px;
+      border-radius: 4px;
+      display: flex;
+      gap: 5px;
+    }
+    .zoom-controls button {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .export-section {
+      margin-top: 20px;
+      padding: 15px;
+      background: var(--dark);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    .export-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .export-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    textarea {
+      display: block;
+      width: 100%;
+      height: 150px;
+      margin: 10px 0;
+      background: #000;
+      color: var(--secondary);
+      font-family: monospace;
+      padding: 10px;
+      border: 1px solid var(--secondary);
+      border-radius: 5px;
+      resize: none;
+    }
+    .help-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--dark);
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1001;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: var(--dark);
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      color: var(--light);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid var(--secondary);
+      padding-bottom: 10px;
+    }
+    .close-button {
+      background: none;
+      color: var(--light);
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .notification {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      background: var(--success);
+      color: var(--dark);
+      padding: 10px 15px;
+      border-radius: 4px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .notification.show {
+      opacity: 1;
+    }
+    select[multiple] {
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid var(--secondary);
+      background: #000;
+      color: var(--secondary);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Game Level Designer</h1>
+    <div class="instructions">
+      Use the toolbar below to add rooms (which automatically connect via tunnels) and place enemy spawns within the rooms.
+      Right-click to pan and scroll to zoom.
+    </div>
+    
+    <div class="toolbar">
+      <div class="toolbar-section">
+        <button id="roomModeButton" class="active tool-tip" data-tooltip="Switch to Room Editor">Room Mode</button>
+        <button id="enemyModeButton" class="tool-tip" data-tooltip="Switch to Enemy Editor">Enemy Mode</button>
+      </div>
+      <div class="divider"></div>
+      <div class="toolbar-section" id="roomTools">
+        <button id="addRoomButton" class="success tool-tip" data-tooltip="Add new room">Add Room</button>
+      </div>
+      <div class="toolbar-section" id="enemyToolbox" style="display:none;">
+        <span class="toolbar-label">Enemy Types:</span>
+        <select id="enemyTypeSelect" multiple>
+          <option value="Normal">Normal</option>
+          <option value="Mimic">Mimic</option>
+          <option value="Gunner">Gunner</option>
+          <option value="Squid">Squid</option>
+          <option value="Triangle">Triangle</option>
+        </select>
+        <span class="toolbar-label">Delay (ms):</span>
+        <input type="number" id="enemyDelayInput" value="0">
+      </div>
+      <div class="divider"></div>
+      <div class="toolbar-section">
+        <button id="centerViewButton" class="tool-tip" data-tooltip="Center view">Center View</button>
+        <button id="gridToggleButton" class="tool-tip" data-tooltip="Toggle grid lines">Grid</button>
+        <button id="clearButton" class="danger tool-tip" data-tooltip="Clear all">Clear All</button>
+      </div>
+    </div>
+    
+    <div class="canvas-container">
+      <canvas id="editorCanvas"></canvas>
+      <div class="status-bar">
+        <span id="statusCoords">X: 0, Y: 0</span> | 
+        <span id="statusZoom">Zoom: 100%</span> | 
+        <span id="statusCount">Rooms: 0, Enemies: 0</span>
+      </div>
+      <div class="zoom-controls">
+        <button id="zoomOutButton" class="tool-tip" data-tooltip="Zoom out">−</button>
+        <button id="zoomResetButton" class="tool-tip" data-tooltip="Reset zoom">1:1</button>
+        <button id="zoomInButton" class="tool-tip" data-tooltip="Zoom in">+</button>
+      </div>
+    </div>
+    
+    <div class="export-section">
+      <div class="export-header">
+        <h3>Export Level Data</h3>
+        <div class="export-buttons">
+          <button id="exportWallsButton" class="success tool-tip" data-tooltip="Export room &amp; tunnel wall layout">Export Walls</button>
+          <button id="copyJsonButton" class="tool-tip" data-tooltip="Copy to clipboard">Copy to Clipboard</button>
+        </div>
+      </div>
+      <textarea id="jsonOutput" readonly placeholder="Your exported level data will appear here"></textarea>
+    </div>
+  </div>
+  
+  <!-- Help Modal -->
+  <div class="help-button tool-tip" data-tooltip="Show help" id="helpButton">?</div>
+  <div class="modal" id="helpModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Level Designer: Quick Guide</h2>
+        <button class="close-button" id="closeHelpButton">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h3>Room Mode</h3>
+        <ul>
+          <li>Click "Add Room" to open the room creation popup.</li>
+          <li>Select a room size (Normal, Large, or Small) and a direction (Above, Below, Left, Right) relative to the last room.</li>
+          <li>If a room would collide with existing rooms/tunnels, the corresponding direction button is disabled (hover for tooltip).</li>
+          <li>When a tunnel is added the adjoining room’s wall is split—with its segments trimmed so that corners do not overlap.</li>
+        </ul>
+        <h3>Enemy Mode</h3>
+        <ul>
+          <li>Use the multi-select to choose enemy types.</li>
+          <li>Set a delay (ms) if needed.</li>
+          <li>Click inside a room to add an enemy spawn. The enemy will be added to a wave whose number matches the room’s ID.</li>
+        </ul>
+        <h3>General</h3>
+        <ul>
+          <li>Scroll to zoom in and out; right-click and drag (or use the pan gesture) to move the view.</li>
+          <li>Click "Center View" to recenter the canvas and "Grid" to toggle grid lines.</li>
+          <li>Use the export buttons to copy your level data.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add Room Modal -->
+  <div class="modal" id="addRoomModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add New Room</h2>
+        <button class="close-button" id="closeAddRoomButton">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:10px;">
+          <label for="roomSizeSelect" class="toolbar-label">Room Size:</label>
+          <select id="roomSizeSelect">
+            <option value="1">Normal</option>
+            <option value="1.5">Large</option>
+            <option value="0.7">Small</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button id="addRoomAbove" class="tool-tip" data-tooltip="Add room above">Above</button>
+          <button id="addRoomBelow" class="tool-tip" data-tooltip="Add room below">Below</button>
+          <button id="addRoomLeft" class="tool-tip" data-tooltip="Add room to the left">Left</button>
+          <button id="addRoomRight" class="tool-tip" data-tooltip="Add room to the right">Right</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    (function(){
+      // === GLOBAL CONSTANTS & STATE ===
+      const DESIGN_WIDTH = 1920;
+      const DESIGN_HEIGHT = 1080;
+      const TUNNEL_LENGTH = 100; // Fixed tunnel length
+      const TUNNEL_WIDTH = 50;   // Tunnel width
+      const WALL_THICKNESS = 20; // Wall thickness
+      let editorMode = "room"; // "room" or "enemy"
+      
+      // === ROOM & TUNNEL STATE ===
+      let rooms = [];
+      let tunnels = [];
+      let roomIdCounter = 1;
+      let lastRoom = null;
+      
+      // Create initial room (centered)
+      function initRooms() {
+        const initialRoom = {
+          id: roomIdCounter++,
+          x: DESIGN_WIDTH / 2,
+          y: DESIGN_HEIGHT / 2,
+          width: DESIGN_WIDTH,
+          height: DESIGN_HEIGHT,
+          obstacles: []
+        };
+        rooms.push(initialRoom);
+        lastRoom = initialRoom;
+      }
+      initRooms();
+      
+      // === ENEMY WAVES: Each wave is now keyed by the room id in which the enemy is created ===
+      let waves = [];
+      function getOrCreateWave(roomId) {
+        let wave = waves.find(w => w.number === roomId);
+        if (!wave) {
+          wave = { number: roomId, seconds: 10, enemies: [] };
+          waves.push(wave);
+        }
+        return wave;
+      }
+      
+      // === VIEW STATE ===
+      let scale = 1.0;
+      let viewOffset = { x: 0, y: 0 };
+      
+      // === UI ELEMENTS ===
+      const roomModeButton = document.getElementById("roomModeButton");
+      const enemyModeButton = document.getElementById("enemyModeButton");
+      const roomTools = document.getElementById("roomTools");
+      const enemyToolbox = document.getElementById("enemyToolbox");
+      const addRoomButton = document.getElementById("addRoomButton");
+      const exportWallsButton = document.getElementById("exportWallsButton");
+      const clearButton = document.getElementById("clearButton");
+      const jsonOutput = document.getElementById("jsonOutput");
+      const canvas = document.getElementById("editorCanvas");
+      const ctx = canvas.getContext("2d");
+      const statusCoords = document.getElementById("statusCoords");
+      const statusZoom = document.getElementById("statusZoom");
+      const statusCount = document.getElementById("statusCount");
+      const zoomOutButton = document.getElementById("zoomOutButton");
+      const zoomInButton = document.getElementById("zoomInButton");
+      const zoomResetButton = document.getElementById("zoomResetButton");
+      const centerViewButton = document.getElementById("centerViewButton");
+      const gridToggleButton = document.getElementById("gridToggleButton");
+      const helpButton = document.getElementById("helpButton");
+      const helpModal = document.getElementById("helpModal");
+      const closeHelpButton = document.getElementById("closeHelpButton");
+      const copyJsonButton = document.getElementById("copyJsonButton");
+      
+      // Add Room Modal Elements
+      const addRoomModal = document.getElementById("addRoomModal");
+      const closeAddRoomButton = document.getElementById("closeAddRoomButton");
+      const roomSizeSelect = document.getElementById("roomSizeSelect");
+      const addRoomAbove = document.getElementById("addRoomAbove");
+      const addRoomBelow = document.getElementById("addRoomBelow");
+      const addRoomLeft = document.getElementById("addRoomLeft");
+      const addRoomRight = document.getElementById("addRoomRight");
+      
+      // Enemy Toolbox Elements
+      const enemyTypeSelect = document.getElementById("enemyTypeSelect");
+      const enemyDelayInput = document.getElementById("enemyDelayInput");
+      
+      // === UPDATE CANVAS RESOLUTION ===
+      function updateCanvasResolution() {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = 600 * dpr;
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = "600px";
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      updateCanvasResolution();
+      window.addEventListener("resize", updateCanvasResolution);
+      
+      // === UTILITY FUNCTIONS ===
+      canvas.addEventListener("contextmenu", (e) => { e.preventDefault(); });
+      function screenToDesign(x, y) {
+        return {
+          x: (x - viewOffset.x) / scale,
+          y: (y - viewOffset.y) / scale
+        };
+      }
+      function rectsIntersect(r1, r2) {
+        return !(r2.x >= r1.x + r1.width ||
+                 r2.x + r2.width <= r1.x ||
+                 r2.y >= r1.y + r1.height ||
+                 r2.y + r2.height <= r1.y);
+      }
+      function collides(newRoom, newTunnel) {
+        let existing = [];
+        rooms.forEach(r => {
+          existing.push({
+            x: r.x - r.width/2,
+            y: r.y - r.height/2,
+            width: r.width,
+            height: r.height
+          });
+        });
+        tunnels.forEach(t => {
+          existing.push({
+            x: t.x - t.width/2,
+            y: t.y - t.height/2,
+            width: t.width,
+            height: t.height
+          });
+        });
+        const roomRect = {
+          x: newRoom.x - newRoom.width/2,
+          y: newRoom.y - newRoom.height/2,
+          width: newRoom.width,
+          height: newRoom.height
+        };
+        const tunnelRect = {
+          x: newTunnel.x - newTunnel.width/2,
+          y: newTunnel.y - newTunnel.height/2,
+          width: newTunnel.width,
+          height: newTunnel.height
+        };
+        for (let rect of existing) {
+          if (rectsIntersect(rect, roomRect) || rectsIntersect(rect, tunnelRect)) {
+            return true;
+          }
+        }
+        return false;
+      }
+      
+      function computePotentialRoom(direction, multiplier, baseRoom) {
+        const newWidth = DESIGN_WIDTH * multiplier;
+        const newHeight = DESIGN_HEIGHT * multiplier;
+        let newRoom = { id: roomIdCounter, x: baseRoom.x, y: baseRoom.y, width: newWidth, height: newHeight, obstacles: [] };
+        let tunnel = { x: 0, y: 0, width: 0, height: 0, direction: direction };
+        if (direction === "above") {
+          newRoom.x = baseRoom.x;
+          newRoom.y = baseRoom.y - (baseRoom.height/2) - TUNNEL_LENGTH - (newHeight/2);
+          tunnel.x = baseRoom.x;
+          tunnel.y = baseRoom.y - (baseRoom.height/2) - (TUNNEL_LENGTH/2);
+          tunnel.width = TUNNEL_WIDTH;
+          tunnel.height = TUNNEL_LENGTH;
+        } else if (direction === "below") {
+          newRoom.x = baseRoom.x;
+          newRoom.y = baseRoom.y + (baseRoom.height/2) + TUNNEL_LENGTH + (newHeight/2);
+          tunnel.x = baseRoom.x;
+          tunnel.y = baseRoom.y + (baseRoom.height/2) + (TUNNEL_LENGTH/2);
+          tunnel.width = TUNNEL_WIDTH;
+          tunnel.height = TUNNEL_LENGTH;
+        } else if (direction === "left") {
+          newRoom.y = baseRoom.y;
+          newRoom.x = baseRoom.x - (baseRoom.width/2) - TUNNEL_LENGTH - (newWidth/2);
+          tunnel.x = baseRoom.x - (baseRoom.width/2) - (TUNNEL_LENGTH/2);
+          tunnel.y = baseRoom.y;
+          tunnel.width = TUNNEL_LENGTH;
+          tunnel.height = TUNNEL_WIDTH;
+        } else if (direction === "right") {
+          newRoom.y = baseRoom.y;
+          newRoom.x = baseRoom.x + (baseRoom.width/2) + TUNNEL_LENGTH + (newWidth/2);
+          tunnel.x = baseRoom.x + (baseRoom.width/2) + (TUNNEL_LENGTH/2);
+          tunnel.y = baseRoom.y;
+          tunnel.width = TUNNEL_LENGTH;
+          tunnel.height = TUNNEL_WIDTH;
+        }
+        return { newRoom, tunnel };
+      }
+      
+      // --- NEW EXPORT FUNCTIONS (no overlapping corners) ---
+      // For each room, we calculate the inset boundaries and add the room id to each wall segment.
+      function exportRoomWalls(room) {
+        let wallsArr = [];
+        const L = room.x - room.width/2;
+        const R = room.x + room.width/2;
+        const T = room.y - room.height/2;
+        const B = room.y + room.height/2;
+        // Inset boundaries (so vertical walls cover the corners)
+        const insetX = L + WALL_THICKNESS;
+        const insetR = R - WALL_THICKNESS;
+        const insetY = T + WALL_THICKNESS;
+        const insetB = B - WALL_THICKNESS;
+        
+        // Top wall (horizontal)
+        const topY = T + WALL_THICKNESS/2;
+        if (room.connection === "top" || room.connectionOut === "top") {
+          const tunnelStartX = room.x - TUNNEL_WIDTH/2;
+          const tunnelEndX = room.x + TUNNEL_WIDTH/2;
+          if (tunnelStartX > L + WALL_THICKNESS) {
+            const segStart = L + WALL_THICKNESS;
+            const segEnd = tunnelStartX;
+            wallsArr.push({
+              x: (segStart + segEnd) / 2,
+              y: topY,
+              width: segEnd - segStart,
+              height: WALL_THICKNESS,
+              roomId: room.id
+            });
+          }
+          if (R - WALL_THICKNESS > tunnelEndX) {
+            const segStart = tunnelEndX;
+            const segEnd = R - WALL_THICKNESS;
+            wallsArr.push({
+              x: (segStart + segEnd) / 2,
+              y: topY,
+              width: segEnd - segStart,
+              height: WALL_THICKNESS,
+              roomId: room.id
+            });
+          }
+        } else {
+          wallsArr.push({
+            x: (L + WALL_THICKNESS + R - WALL_THICKNESS) / 2,
+            y: topY,
+            width: (R - WALL_THICKNESS) - (L + WALL_THICKNESS),
+            height: WALL_THICKNESS,
+            roomId: room.id
+          });
+        }
+        
+        // Bottom wall (horizontal)
+        const bottomY = B - WALL_THICKNESS/2;
+        if (room.connection === "bottom" || room.connectionOut === "bottom") {
+          const tunnelStartX = room.x - TUNNEL_WIDTH/2;
+          const tunnelEndX = room.x + TUNNEL_WIDTH/2;
+          if (tunnelStartX > L + WALL_THICKNESS) {
+            const segStart = L + WALL_THICKNESS;
+            const segEnd = tunnelStartX;
+            wallsArr.push({
+              x: (segStart + segEnd) / 2,
+              y: bottomY,
+              width: segEnd - segStart,
+              height: WALL_THICKNESS,
+              roomId: room.id
+            });
+          }
+          if (R - WALL_THICKNESS > tunnelEndX) {
+            const segStart = tunnelEndX;
+            const segEnd = R - WALL_THICKNESS;
+            wallsArr.push({
+              x: (segStart + segEnd) / 2,
+              y: bottomY,
+              width: segEnd - segStart,
+              height: WALL_THICKNESS,
+              roomId: room.id
+            });
+          }
+        } else {
+          wallsArr.push({
+            x: (L + WALL_THICKNESS + R - WALL_THICKNESS) / 2,
+            y: bottomY,
+            width: (R - WALL_THICKNESS) - (L + WALL_THICKNESS),
+            height: WALL_THICKNESS,
+            roomId: room.id
+          });
+        }
+        
+        // Left wall (vertical)
+        const leftX = L + WALL_THICKNESS/2;
+        if (room.connection === "left" || room.connectionOut === "left") {
+          const tunnelStartY = room.y - TUNNEL_WIDTH/2;
+          const tunnelEndY = room.y + TUNNEL_WIDTH/2;
+          if (tunnelStartY > T + WALL_THICKNESS) {
+            const segStart = T + WALL_THICKNESS;
+            const segEnd = tunnelStartY;
+            wallsArr.push({
+              x: leftX,
+              y: (segStart + segEnd) / 2,
+              width: WALL_THICKNESS,
+              height: segEnd - segStart,
+              roomId: room.id
+            });
+          }
+          if (B - WALL_THICKNESS > tunnelEndY) {
+            const segStart = tunnelEndY;
+            const segEnd = B - WALL_THICKNESS;
+            wallsArr.push({
+              x: leftX,
+              y: (segStart + segEnd) / 2,
+              width: WALL_THICKNESS,
+              height: segEnd - segStart,
+              roomId: room.id
+            });
+          }
+        } else {
+          wallsArr.push({
+            x: leftX,
+            y: (T + WALL_THICKNESS + B - WALL_THICKNESS) / 2,
+            width: WALL_THICKNESS,
+            height: (B - WALL_THICKNESS) - (T + WALL_THICKNESS),
+            roomId: room.id
+          });
+        }
+        
+        // Right wall (vertical)
+        const rightX = R - WALL_THICKNESS/2;
+        if (room.connection === "right" || room.connectionOut === "right") {
+          const tunnelStartY = room.y - TUNNEL_WIDTH/2;
+          const tunnelEndY = room.y + TUNNEL_WIDTH/2;
+          if (tunnelStartY > T + WALL_THICKNESS) {
+            const segStart = T + WALL_THICKNESS;
+            const segEnd = tunnelStartY;
+            wallsArr.push({
+              x: rightX,
+              y: (segStart + segEnd) / 2,
+              width: WALL_THICKNESS,
+              height: segEnd - segStart,
+              roomId: room.id
+            });
+          }
+          if (B - WALL_THICKNESS > tunnelEndY) {
+            const segStart = tunnelEndY;
+            const segEnd = B - WALL_THICKNESS;
+            wallsArr.push({
+              x: rightX,
+              y: (segStart + segEnd) / 2,
+              width: WALL_THICKNESS,
+              height: segEnd - segStart,
+              roomId: room.id
+            });
+          }
+        } else {
+          wallsArr.push({
+            x: rightX,
+            y: (T + WALL_THICKNESS + B - WALL_THICKNESS) / 2,
+            width: WALL_THICKNESS,
+            height: (B - WALL_THICKNESS) - (T + WALL_THICKNESS),
+            roomId: room.id
+          });
+        }
+        
+        return wallsArr;
+      }
+      
+      function exportTunnelWalls(tunnel) {
+        let wallsArr = [];
+        // For vertical tunnels (connecting above/below), position walls flush with room gap.
+        if (tunnel.width === TUNNEL_WIDTH) {
+          const leftX = tunnel.x - TUNNEL_WIDTH/2 - WALL_THICKNESS/2;
+          const rightX = tunnel.x + TUNNEL_WIDTH/2 + WALL_THICKNESS/2;
+          wallsArr.push({ 
+            x: leftX, 
+            y: tunnel.y, 
+            width: WALL_THICKNESS, 
+            height: tunnel.height,
+            tunnelRooms: tunnel.rooms
+          });
+          wallsArr.push({ 
+            x: rightX, 
+            y: tunnel.y, 
+            width: WALL_THICKNESS, 
+            height: tunnel.height,
+            tunnelRooms: tunnel.rooms
+          });
+        } else {  // Horizontal tunnels (connecting left/right)
+          const topY = tunnel.y - TUNNEL_WIDTH/2 - WALL_THICKNESS/2;
+          const bottomY = tunnel.y + TUNNEL_WIDTH/2 + WALL_THICKNESS/2;
+          wallsArr.push({ 
+            x: tunnel.x, 
+            y: topY, 
+            width: tunnel.width, 
+            height: WALL_THICKNESS,
+            tunnelRooms: tunnel.rooms
+          });
+          wallsArr.push({ 
+            x: tunnel.x, 
+            y: bottomY, 
+            width: tunnel.width, 
+            height: WALL_THICKNESS,
+            tunnelRooms: tunnel.rooms
+          });
+        }
+        return wallsArr;
+      }
+      
+      // --- DRAW WALLS ON CANVAS (red overlay) ---
+      function drawExportedWalls() {
+        let exportWalls = [];
+        rooms.forEach(r => {
+          exportWalls.push(...exportRoomWalls(r));
+        });
+        tunnels.forEach(t => {
+          exportWalls.push(...exportTunnelWalls(t));
+        });
+        ctx.save();
+        ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+        exportWalls.forEach(w => {
+          ctx.fillRect(w.x - w.width/2, w.y - w.height/2, w.width, w.height);
+        });
+        ctx.restore();
+      }
+      
+      // --- MODE TOGGLING ---
+      roomModeButton.addEventListener("click", () => {
+        editorMode = "room";
+        roomModeButton.classList.add("active");
+        enemyModeButton.classList.remove("active");
+        roomTools.style.display = "flex";
+        enemyToolbox.style.display = "none";
+        draw();
+      });
+      enemyModeButton.addEventListener("click", () => {
+        editorMode = "enemy";
+        enemyModeButton.classList.add("active");
+        roomModeButton.classList.remove("active");
+        roomTools.style.display = "none";
+        enemyToolbox.style.display = "flex";
+        draw();
+      });
+      
+      // --- ADD ROOM MODAL LOGIC ---
+      addRoomButton.addEventListener("click", () => {
+        addRoomModal.style.display = "flex";
+        updateDirectionButtons();
+      });
+      closeAddRoomButton.addEventListener("click", () => {
+        addRoomModal.style.display = "none";
+      });
+      roomSizeSelect.addEventListener("change", updateDirectionButtons);
+      
+      function updateDirectionButtons() {
+        const multiplier = parseFloat(roomSizeSelect.value);
+        let directions = [
+          { btn: addRoomAbove, dir: "above" },
+          { btn: addRoomBelow, dir: "below" },
+          { btn: addRoomLeft, dir: "left" },
+          { btn: addRoomRight, dir: "right" }
+        ];
+        directions.forEach(item => {
+          const { newRoom, tunnel } = computePotentialRoom(item.dir, multiplier, lastRoom);
+          if (collides(newRoom, tunnel)) {
+            item.btn.disabled = true;
+            item.btn.setAttribute("data-tooltip", "Room would intersect an existing room/tunnel");
+          } else {
+            item.btn.disabled = false;
+            item.btn.setAttribute("data-tooltip", "Add room " + item.dir);
+          }
+        });
+      }
+      
+      function addRoom(direction) {
+        const multiplier = parseFloat(roomSizeSelect.value);
+        const { newRoom, tunnel } = computePotentialRoom(direction, multiplier, lastRoom);
+        if (collides(newRoom, tunnel)) return;
+        if (direction === "above") {
+          newRoom.connection = "bottom";
+          lastRoom.connectionOut = "top";
+        } else if (direction === "below") {
+          newRoom.connection = "top";
+          lastRoom.connectionOut = "bottom";
+        } else if (direction === "left") {
+          newRoom.connection = "right";
+          lastRoom.connectionOut = "left";
+        } else if (direction === "right") {
+          newRoom.connection = "left";
+          lastRoom.connectionOut = "right";
+        }
+        // Label the tunnel with the two room ids it connects.
+        tunnel.rooms = [lastRoom.id, newRoom.id];
+        rooms.push(newRoom);
+        tunnels.push(tunnel);
+        lastRoom = newRoom;
+        roomIdCounter++;
+        addRoomModal.style.display = "none";
+        draw();
+      }
+      addRoomAbove.addEventListener("click", () => addRoom("above"));
+      addRoomBelow.addEventListener("click", () => addRoom("below"));
+      addRoomLeft.addEventListener("click", () => addRoom("left"));
+      addRoomRight.addEventListener("click", () => addRoom("right"));
+      
+      // --- CLEAR & EXPORT ---
+      function clearAll() {
+        rooms = [];
+        tunnels = [];
+        roomIdCounter = 1;
+        initRooms();
+        waves = [];
+      }
+      clearButton.addEventListener("click", () => {
+        clearAll();
+        draw();
+        jsonOutput.value = "";
+      });
+      exportWallsButton.addEventListener("click", () => {
+        let exportWalls = [];
+        rooms.forEach(r => {
+          exportWalls.push(...exportRoomWalls(r));
+        });
+        tunnels.forEach(t => {
+          exportWalls.push(...exportTunnelWalls(t));
+        });
+        const output = { walls: exportWalls, waves: waves };
+        jsonOutput.value = JSON.stringify(output, null, 2);
+      });
+      
+      // --- VIEW: PAN & ZOOM ---
+      canvas.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        const oldScale = scale;
+        scale *= (1 - e.deltaY * 0.001);
+        scale = Math.max(0.1, Math.min(5, scale));
+        const rect = canvas.getBoundingClientRect();
+        const ratio = canvas.width / rect.width;
+        const mouseX = (e.clientX - rect.left) * ratio;
+        const mouseY = (e.clientY - rect.top) * ratio;
+        const designBefore = {
+          x: (mouseX - viewOffset.x) / oldScale,
+          y: (mouseY - viewOffset.y) / oldScale
+        };
+        viewOffset.x = mouseX - designBefore.x * scale;
+        viewOffset.y = mouseY - designBefore.y * scale;
+        draw();
+      });
+      
+      function updateStatus() {
+        statusCoords.textContent = "X: " + Math.round(viewOffset.x / scale) + ", Y: " + Math.round(viewOffset.y / scale);
+        statusZoom.textContent = "Zoom: " + Math.round(scale * 100) + "%";
+        const totalEnemies = waves.reduce((sum, wave) => sum + wave.enemies.length, 0);
+        statusCount.textContent = "Rooms: " + rooms.length + ", Enemies: " + totalEnemies;
+      }
+      
+      // --- MOUSE EVENTS ON CANVAS ---
+      let panStart = null, panInitialOffset = null;
+      canvas.addEventListener("mousedown", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const ratio = canvas.width / rect.width;
+        const mouseX = (e.clientX - rect.left) * ratio;
+        const mouseY = (e.clientY - rect.top) * ratio;
+        const designPos = screenToDesign(mouseX, mouseY);
+        if (e.button === 2) {
+          panStart = { x: e.clientX, y: e.clientY };
+          panInitialOffset = { x: viewOffset.x, y: viewOffset.y };
+          return;
+        }
+        if (editorMode === "enemy") {
+          let targetRoom = null;
+          for (let r of rooms) {
+            const left = r.x - r.width/2;
+            const right = r.x + r.width/2;
+            const top = r.y - r.height/2;
+            const bottom = r.y + r.height/2;
+            if (designPos.x >= left && designPos.x <= right && designPos.y >= top && designPos.y <= bottom) {
+              targetRoom = r;
+              break;
+            }
+          }
+          if (targetRoom) {
+            const selectedTypes = Array.from(enemyTypeSelect.selectedOptions).map(opt => opt.value);
+            selectedTypes.forEach(type => {
+              let placement = "random";
+              const leftEdge = targetRoom.x - targetRoom.width/2;
+              const rightEdge = targetRoom.x + targetRoom.width/2;
+              if (designPos.x < leftEdge + targetRoom.width * 0.2) placement = "left_edge";
+              else if (designPos.x > rightEdge - targetRoom.width * 0.2) placement = "right_edge";
+              const delay = parseInt(enemyDelayInput.value) || 0;
+              const newSpawn = {
+                type: type,
+                x: designPos.x,
+                y: designPos.y,
+                delay: delay,
+                placement: placement,
+                count: 1,
+                roomId: targetRoom.id
+              };
+              const wave = getOrCreateWave(targetRoom.id);
+              wave.enemies.push(newSpawn);
+            });
+            draw();
+          }
+        }
+      });
+      
+      canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const ratio = canvas.width / rect.width;
+        const mouseX = (e.clientX - rect.left) * ratio;
+        const mouseY = (e.clientY - rect.top) * ratio;
+        if (e.buttons === 2 && panStart) {
+          const dx = e.clientX - panStart.x;
+          const dy = e.clientY - panStart.y;
+          viewOffset.x = panInitialOffset.x + dx;
+          viewOffset.y = panInitialOffset.y + dy;
+          draw();
+          return;
+        }
+      });
+      
+      // --- DRAW FUNCTION ---
+      function draw() {
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.setTransform(scale, 0, 0, scale, viewOffset.x, viewOffset.y);
+        
+        // Draw rooms
+        rooms.forEach(r => {
+          const topLeftX = r.x - r.width/2;
+          const topLeftY = r.y - r.height/2;
+          ctx.fillStyle = "rgba(92,219,255,0.1)";
+          ctx.fillRect(topLeftX, topLeftY, r.width, r.height);
+          ctx.strokeStyle = "#5CDBFF";
+          ctx.strokeRect(topLeftX, topLeftY, r.width, r.height);
+        });
+        
+        // Draw tunnels
+        tunnels.forEach(t => {
+          const topLeftX = t.x - t.width/2;
+          const topLeftY = t.y - t.height/2;
+          ctx.fillStyle = "#5CDBFF";
+          ctx.fillRect(topLeftX, topLeftY, t.width, t.height);
+        });
+        
+        // Draw enemy spawns (from all waves)
+        if (editorMode === "enemy") {
+          waves.forEach(wave => {
+            wave.enemies.forEach(spawn => {
+              ctx.fillStyle = "#FFCB05";
+              ctx.beginPath();
+              ctx.arc(spawn.x, spawn.y, 15, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = "#000";
+              ctx.font = (12/scale) + "px Arial";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(spawn.type, spawn.x, spawn.y);
+              ctx.fillStyle = "#5CDBFF";
+              ctx.fillText("1", spawn.x, spawn.y + 18/scale);
+            });
+          });
+        }
+        
+        // Draw exported walls (red overlay)
+        drawExportedWalls();
+        updateStatus();
+      }
+      
+      draw();
+      
+      // --- ZOOM CONTROLS ---
+      zoomOutButton.addEventListener("click", () => {
+        scale *= 0.9;
+        draw();
+      });
+      zoomInButton.addEventListener("click", () => {
+        scale *= 1.1;
+        draw();
+      });
+      zoomResetButton.addEventListener("click", () => {
+        scale = 1.0;
+        viewOffset = { x: 0, y: 0 };
+        draw();
+      });
+      
+      // --- CENTER VIEW ---
+      centerViewButton.addEventListener("click", () => {
+        viewOffset = { x: 0, y: 0 };
+        draw();
+      });
+      
+      // --- GRID TOGGLE ---
+      let gridVisible = false;
+      gridToggleButton.addEventListener("click", () => {
+        gridVisible = !gridVisible;
+        if (gridVisible) {
+          drawGridLines();
+        } else {
+          draw();
+        }
+      });
+      function drawGridLines() {
+        draw();
+        ctx.save();
+        ctx.strokeStyle = "rgba(92,219,255,0.2)";
+        ctx.lineWidth = 1/scale;
+        for (let x = 0; x <= DESIGN_WIDTH*2; x += 50) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, DESIGN_HEIGHT*2);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= DESIGN_HEIGHT*2; y += 50) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(DESIGN_WIDTH*2, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      
+      // --- HELP MODAL ---
+      helpButton.addEventListener("click", () => {
+        helpModal.style.display = "flex";
+      });
+      closeHelpButton.addEventListener("click", () => {
+        helpModal.style.display = "none";
+      });
+      
+      // --- COPY JSON TO CLIPBOARD ---
+      copyJsonButton.addEventListener("click", () => {
+        jsonOutput.select();
+        document.execCommand("copy");
+        showNotification("Copied to clipboard!");
+      });
+      const notification = document.createElement("div");
+      notification.className = "notification";
+      notification.textContent = "Copied to clipboard!";
+      document.body.appendChild(notification);
+      function showNotification(message) {
+        notification.textContent = message;
+        notification.classList.add("show");
+        setTimeout(() => {
+          notification.classList.remove("show");
+        }, 2000);
+      }
+      
+      /*
+      // --- For reference: createWall function from RAPIER integration ---
+      function createWall(x, y, width, height) {
+        const bodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(x, y);
+        const wallBody = physicsWorld.createRigidBody(bodyDesc);
+        const colliderDesc = RAPIER.ColliderDesc.cuboid(width / 2, height / 2);
+        physicsWorld.createCollider(colliderDesc, wallBody);
+        walls.push({ x, y, width, height });
+      }
+      */
+    })();
+  </script>
+</body>
+</html>
